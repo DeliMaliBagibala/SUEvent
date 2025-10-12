@@ -1,5 +1,5 @@
 # SUEvent
-Welcome to SUEvent!
+What is SUEvent?
 SUEvent is a CS310 project designed to help Sabancı University students connect with others who share similar interests. Whether you’d like to watch a movie, play a sport, or engage in other fun activities, SUEvent makes it easy to find someone to join you.
 
 Why SUEvent?
