@@ -4,3 +4,12 @@ SUEvent is a CS310 project designed to help Sabancı University students connect
 
 Why SUEvent?
 At Sabancı University, opportunities to socialize outside of student club activities are often limited. Recognizing this challenge, we created SUEvent to make it easier for members of the Sabancı University community to meet new people and build meaningful connections.
+
+# Project Group
+| Name    | Student ID |
+| -------- | ------- |
+| Arda Ösün |  |
+| Furkan Gönen |  |
+| Mehmet Ali Bağıbala |  |
+| Ulaş Deniz |  |
+| Yağız Tüten |  |
