@@ -1,7 +1,6 @@
 # SUEvent
-Welcome to the SUEvent. This is a CS310 project for people who wants to find someone to meet and do activites such as watching a film or a sport activity.
+Welcome to SUEvent!
+SUEvent is a CS310 project designed to help Sabancı University students connect with others who share similar interests. Whether you’d like to watch a movie, play a sport, or engage in other fun activities, SUEvent makes it easy to find someone to join you.
 
-Why?
-In Sabanci University except from the student club activites there are not many possibilies to socialize and meet new people.
-
-So coming from this problem, we wanted to help members of Sabanci university soicety to help them meet new people.
+Why SUEvent?
+At Sabancı University, opportunities to socialize outside of student club activities are often limited. Recognizing this challenge, we created SUEvent to make it easier for members of the Sabancı University community to meet new people and build meaningful connections.
