@@ -239,6 +239,7 @@ class _LoginPageState extends State<LoginPage> {
       child: TextFormField(
         controller: controller,
         obscureText: isPassword,
+        style: TextStyle(color: Colors.black),
         autovalidateMode: AutovalidateMode.onUserInteraction,
         validator: (value) {
           if (value == null || value.isEmpty) {
@@ -389,6 +390,7 @@ class _RegisterPageState extends State<RegisterPage> {
       child: TextFormField(
         controller: controller,
         obscureText: isPassword,
+        style: TextStyle(color: Colors.black),
         autovalidateMode: AutovalidateMode.onUserInteraction,
         validator: (value) {
           if (value == null || value.isEmpty) {
