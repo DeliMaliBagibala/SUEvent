@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'theme_constants.dart';
+import 'day_events_screen.dart'; // Import the new screen
 
 class CalendarScreen extends StatelessWidget {
   final VoidCallback onBackTap;
@@ -107,7 +108,7 @@ class CalendarGrid extends StatelessWidget {
             itemCount: _daysInMonth.length,
             itemBuilder: (context, index) {
               final day = _daysInMonth[index];
-              return _buildDayCell(day);
+              return _buildDayCell(context, day);
             },
           ),
         ),
@@ -115,7 +116,7 @@ class CalendarGrid extends StatelessWidget {
     );
   }
 
-  Widget _buildDayCell(int day) {
+  Widget _buildDayCell(BuildContext context, int day) {
     final isCurrentMonth = day > 0;
     final eventCount = isCurrentMonth ? (_eventsPerDay[day] ?? 0) : 0;
 
@@ -130,7 +131,13 @@ class CalendarGrid extends StatelessWidget {
         child: InkWell(
           onTap: isCurrentMonth
               ? () {
-            // Navigation to the day will be made later
+            // Navigate to the Day Events Screen
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DayEventsScreen(dateString: "$day, October"), // Passing dummy month for now
+              ),
+            );
             print("Tapped day $day");
           }
               : null,
