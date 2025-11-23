@@ -379,8 +379,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               ],
             ),
           ),
-
-          // Form Content
+          
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30.0),
             child: Column(
@@ -584,4 +583,5 @@ class EventCard extends StatelessWidget {
       ),
     );
   }
+
 }
