@@ -21,7 +21,6 @@ class EventApp extends StatelessWidget {
   }
 }
 
-
 class Event {
   final String title;
   final String location;
@@ -35,7 +34,6 @@ class Event {
     required this.time,
   });
 }
-
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -59,13 +57,24 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _deleteEvent(int index) {
+    setState(() {
+      _homeEvents.removeAt(index);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Event deleted"),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget bodyContent;
 
-
     final VoidCallback onBackToHome = () => _onItemTapped(0);
-
 
     if (_selectedIndex == 0) {
       bodyContent = _buildHomeContent();
@@ -137,7 +146,10 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.all(AppDimens.pagePadding),
               itemCount: _homeEvents.length,
               itemBuilder: (context, index) {
-                return EventCard(event: _homeEvents[index]);
+                return EventCard(
+                  event: _homeEvents[index],
+                  onDelete: () => _deleteEvent(index),
+                );
               },
             ),
           ),
@@ -360,7 +372,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Container(
             padding: const EdgeInsets.fromLTRB(10, 20, 10, 20),
             child: Row(
@@ -509,88 +520,98 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
 class EventCard extends StatelessWidget {
   final Event event;
+  final VoidCallback? onDelete;
 
-  const EventCard({super.key, required this.event});
+  const EventCard({super.key, required this.event, this.onDelete});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+      color: AppColors.cardBackground,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimens.cardRadius),
       ),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 28,
-            backgroundColor: AppColors.textWhite,
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            const CircleAvatar(
+              radius: 28,
+              backgroundColor: AppColors.textWhite,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    event.title,
+                    style: AppTextStyles.bodyBold,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        event.location,
+                        style: AppTextStyles.cardSubtitle,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        event.category,
+                        style: AppTextStyles.cardSubtitle,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Column(
               children: [
-                Text(
-                  event.title,
-                  style: AppTextStyles.bodyBold,
+                ElevatedButton(
+                  onPressed: () {
+                    print("Detailed event page button pressed");
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.textWhite.withOpacity(0.5),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppDimens.buttonRadius),
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Text(
+                        "View\nEvent",
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.buttonSmall,
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.play_arrow, color: AppColors.textWhite, size: AppDimens.iconSmall),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Text(
-                      event.location,
-                      style: AppTextStyles.cardSubtitle,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      event.category,
-                      style: AppTextStyles.cardSubtitle,
-                    ),
-                  ],
+                Text(
+                  event.time,
+                  style: AppTextStyles.bodyBold,
                 ),
+                if (onDelete != null)
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                    onPressed: onDelete,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
               ],
             ),
-          ),
-          Column(
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  print("Detailed event button pressed");
-                  ;
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.textWhite.withOpacity(0.5),
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppDimens.buttonRadius),
-                  ),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Text(
-                      "View\nEvent",
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.buttonSmall,
-                    ),
-                    SizedBox(width: 4),
-                    Icon(Icons.play_arrow, color: AppColors.textWhite, size: AppDimens.iconSmall),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                event.time,
-                style: AppTextStyles.bodyBold,
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
