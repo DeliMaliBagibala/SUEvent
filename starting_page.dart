@@ -11,7 +11,7 @@ class StartingPage extends StatelessWidget {
       backgroundColor: AppColors.backgroundHeader,
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40.0),
+          padding: EdgeInsets.symmetric(horizontal: 40.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -19,7 +19,7 @@ class StartingPage extends StatelessWidget {
                 width: 150,
                 height: 150,
                 color: Colors.white,
-                child: const Center(
+                child: Center(
                   child: Text(
                     "LOGO",
                     style: TextStyle(
@@ -30,7 +30,7 @@ class StartingPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 100),
+              SizedBox(height: 100),
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -38,7 +38,7 @@ class StartingPage extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginPage()),
+                      MaterialPageRoute(builder: (context) => LoginPage()),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -47,13 +47,13 @@ class StartingPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     "Login",
                     style: TextStyle(color: Colors.white, fontSize: 18),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -61,7 +61,7 @@ class StartingPage extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const RegisterPage()),
+                      MaterialPageRoute(builder: (context) => RegisterPage()),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -70,21 +70,21 @@ class StartingPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     "Register",
                     style: TextStyle(color: Colors.black, fontSize: 18),
                   ),
                 ),
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: 40),
               TextButton(
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const HomePage()),
+                    MaterialPageRoute(builder: (context) => HomePage()),
                   );
                 },
-                child: const Text(
+                child: Text(
                   "Continue as guest",
                   style: TextStyle(
                     color: Colors.white70,
@@ -127,7 +127,7 @@ class _LoginPageState extends State<LoginPage> {
     if (isValid) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
+        MaterialPageRoute(builder: (context) => HomePage()),
             (route) => false,
       );
     } else {
@@ -135,12 +135,12 @@ class _LoginPageState extends State<LoginPage> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text("Invalid Input"),
-          content: const Text("Please correct the errors in the form."),
+          title: Text("Invalid Input"),
+          content: Text("Please correct the errors in the form."),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("OK"),
+              child: Text("OK"),
             ),
           ],
         ),
@@ -154,7 +154,7 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: AppColors.backgroundHeader,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(30.0),
+          padding: EdgeInsets.all(30.0),
           child: Form(
             key: _formKey,
             child: Column(
@@ -163,12 +163,12 @@ class _LoginPageState extends State<LoginPage> {
                 Align(
                   alignment: Alignment.topLeft,
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_left, size: 40, color: Colors.black),
+                    icon: Icon(Icons.arrow_left, size: 40, color: Colors.black),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
-                const SizedBox(height: 20),
-                const Text(
+                SizedBox(height: 20),
+                Text(
                   "WELCOME BACK!\nGLAD TO SEE YOU, AGAIN!",
                   textAlign: TextAlign.left,
                   style: TextStyle(
@@ -177,16 +177,16 @@ class _LoginPageState extends State<LoginPage> {
                     color: Colors.black,
                   ),
                 ),
-                const SizedBox(height: 50),
+                SizedBox(height: 50),
                 _buildTextField("Enter Email", _emailController),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 _buildTextField("Enter password", _passwordController, isPassword: true),
-                const SizedBox(height: 10),
-                const Align(
+                SizedBox(height: 10),
+                Align(
                   alignment: Alignment.centerRight,
                   child: Text("Forgot Password?", style: TextStyle(color: Colors.white70)),
                 ),
-                const SizedBox(height: 40),
+                SizedBox(height: 40),
                 SizedBox(
                   height: 50,
                   child: ElevatedButton(
@@ -197,25 +197,25 @@ class _LoginPageState extends State<LoginPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       "Login",
                       style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
                   ),
                 ),
-                const Spacer(),
+                Spacer(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Don't have an account? ", style: TextStyle(color: Colors.black)),
+                    Text("Don't have an account? ", style: TextStyle(color: Colors.black)),
                     GestureDetector(
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const RegisterPage()),
+                          MaterialPageRoute(builder: (context) => RegisterPage()),
                         );
                       },
-                      child: const Text(
+                      child: Text(
                         "Register Now",
                         style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold),
                       ),
@@ -233,7 +233,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget _buildTextField(String hint, TextEditingController controller, {bool isPassword = false}) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF3E5F5),
+        color: Color(0xFFF3E5F5),
         borderRadius: BorderRadius.circular(12),
       ),
       child: TextFormField(
@@ -245,7 +245,7 @@ class _LoginPageState extends State<LoginPage> {
             return "Required";
           }
           if (hint.toLowerCase().contains("mail")) {
-            final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+            final emailRegex = RegExp(r'^[\w-\.]+@sabanciuniv.edu$');
             if (!emailRegex.hasMatch(value)) {
               return "Invalid Email";
             }
@@ -258,9 +258,9 @@ class _LoginPageState extends State<LoginPage> {
         },
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: Colors.black26),
+          hintStyle: TextStyle(color: Colors.black26),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         ),
       ),
     );
@@ -296,19 +296,19 @@ class _RegisterPageState extends State<RegisterPage> {
     if (isValid) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
+        MaterialPageRoute(builder: (context) => HomePage()),
             (route) => false,
       );
     } else {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text("Invalid Input"),
-          content: const Text("Please correct the errors in the form."),
+          title: Text("Invalid Input"),
+          content: Text("Please correct the errors in the form."),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("OK"),
+              child: Text("OK"),
             ),
           ],
         ),
@@ -322,7 +322,7 @@ class _RegisterPageState extends State<RegisterPage> {
       backgroundColor: AppColors.backgroundHeader,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(30.0),
+          padding: EdgeInsets.all(30.0),
           child: SingleChildScrollView(
             child: Form(
               key: _formKey,
@@ -332,12 +332,12 @@ class _RegisterPageState extends State<RegisterPage> {
                   Align(
                     alignment: Alignment.topLeft,
                     child: IconButton(
-                      icon: const Icon(Icons.arrow_left, size: 40, color: Colors.black),
+                      icon: Icon(Icons.arrow_left, size: 40, color: Colors.black),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  const Text(
+                  SizedBox(height: 20),
+                  Text(
                     "WELCOME TO SUEVENT!\nREGISTER NOW AND JOIN THE FUN!",
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -346,15 +346,15 @@ class _RegisterPageState extends State<RegisterPage> {
                       color: Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40),
                   _buildTextField("Enter Su-mail", _emailController),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15),
                   _buildTextField("Username", _usernameController),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15),
                   _buildTextField("Password", _passwordController, isPassword: true),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15),
                   _buildTextField("Password again", _confirmPasswordController, isPassword: true),
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40),
                   SizedBox(
                     height: 50,
                     child: ElevatedButton(
@@ -365,7 +365,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         "Register",
                         style: TextStyle(color: Colors.white, fontSize: 18),
                       ),
@@ -383,7 +383,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _buildTextField(String hint, TextEditingController controller, {bool isPassword = false}) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF3E5F5),
+        color: Color(0xFFF3E5F5),
         borderRadius: BorderRadius.circular(12),
       ),
       child: TextFormField(
@@ -408,9 +408,9 @@ class _RegisterPageState extends State<RegisterPage> {
         },
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: Colors.black26),
+          hintStyle: TextStyle(color: Colors.black26),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         ),
       ),
     );
