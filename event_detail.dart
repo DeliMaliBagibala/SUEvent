@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'profile_page.dart';
 import 'calendar_screen.dart';
 import 'theme_constants.dart';
-import 'home_page.dart'; // Contains Event, HomePage, SearchScreen, CreateEventScreen, EventCard
+import 'home_page.dart';
 
 class EventDetailScreen extends StatefulWidget {
   final Event event;
@@ -563,4 +563,5 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
       ],
     );
   }
+
 }
