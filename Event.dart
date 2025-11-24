@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'theme_constants.dart';
 import 'calendar_screen.dart';
 import 'starting_page.dart';
+import 'profile_page.dart';
 
 class EventApp extends StatelessWidget {
   const EventApp({super.key});
@@ -85,7 +86,7 @@ class _HomePageState extends State<HomePage> {
     } else if (_selectedIndex == 3) {
       bodyContent = CalendarScreen(onBackTap: onBackToHome);
     } else if (_selectedIndex == 4) {
-      bodyContent = Center(child: Text("Profile Page Placeholder", style: AppTextStyles.headerLarge));
+      bodyContent = ProfilePage(onBackTap: onBackToHome);
     } else {
       bodyContent = Center(child: Text("Page Index $_selectedIndex"));
     }
