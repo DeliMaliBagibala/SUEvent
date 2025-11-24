@@ -1,6 +1,66 @@
 import 'package:flutter/material.dart';
 import 'theme_constants.dart';
-import 'Event.dart';
+import 'home_page.dart';
+
+void AlertDialogShower(context) {// Single AlertDialog function to call wherever needed
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text("Your information is invalid!"),
+      content: Text("Please check your inputs in the form."),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text("OK"),
+        ),
+      ],
+    ),
+  );
+}
+
+String? LoginRegisterValidation(value, hint, isPassword){// this is the common email and password validation method.
+  if (value == null || value.isEmpty) {
+    return "Required";
+  }
+  if (hint.toLowerCase().contains("mail")) {
+    final emailRegex = RegExp(r'^[\w-\.]+@sabanciuniv.edu$');
+    if (!emailRegex.hasMatch(value)) {
+      return "Invalid Email (please use only *****@sabanciuniv.edu mails)";
+    }
+  } else if (isPassword) {
+    if (value.length < 6) {
+      return "Password too short (at least 6 characters)";
+    }
+    if (value.length >= 24) {
+      return "Password too long (at most 24 characters)";
+    }
+  }
+  return null;
+}
+
+Widget _buildTextField(String hint, TextEditingController controller, {bool isPassword = false}) {
+  return Container(
+    decoration: BoxDecoration(
+      color: Color(0xFFF3E5F5),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: TextFormField(
+      controller: controller,
+      obscureText: isPassword,
+      style: TextStyle(color: Colors.black),
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      validator: (value) {
+        return LoginRegisterValidation(value, hint, isPassword);
+      },
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(color: Colors.black26),
+        border: InputBorder.none,
+        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      ),
+    ),
+  );
+}
 
 class StartingPage extends StatelessWidget {
   const StartingPage({super.key});
@@ -132,19 +192,7 @@ class _LoginPageState extends State<LoginPage> {
       );
     } else {
       // Show Alert Dialog if validation fails
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Invalid Input"),
-          content: Text("Please correct the errors in the form."),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("OK"),
-            ),
-          ],
-        ),
-      );
+      AlertDialogShower(context); // Please see line 5
     }
   }
 
@@ -229,43 +277,6 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
-  Widget _buildTextField(String hint, TextEditingController controller, {bool isPassword = false}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Color(0xFFF3E5F5),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TextFormField(
-        controller: controller,
-        obscureText: isPassword,
-        style: TextStyle(color: Colors.black),
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Required";
-          }
-          if (hint.toLowerCase().contains("mail")) {
-            final emailRegex = RegExp(r'^[\w-\.]+@sabanciuniv.edu$');
-            if (!emailRegex.hasMatch(value)) {
-              return "Invalid Email";
-            }
-          } else if (isPassword) {
-            if (value.length < 6) {
-              return "Password too short";
-            }
-          }
-          return null;
-        },
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.black26),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        ),
-      ),
-    );
-  }
 }
 
 class RegisterPage extends StatefulWidget {
@@ -301,19 +312,7 @@ class _RegisterPageState extends State<RegisterPage> {
             (route) => false,
       );
     } else {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Invalid Input"),
-          content: Text("Please correct the errors in the form."),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("OK"),
-            ),
-          ],
-        ),
-      );
+      AlertDialogShower(context);// PLease see line 5.
     }
   }
 
@@ -376,43 +375,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(String hint, TextEditingController controller, {bool isPassword = false}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Color(0xFFF3E5F5),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TextFormField(
-        controller: controller,
-        obscureText: isPassword,
-        style: TextStyle(color: Colors.black),
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Required";
-          }
-          if (hint.toLowerCase().contains("mail")) {
-            final emailRegex = RegExp(r'^[\w-\.]+@sabanciuniv.edu$');
-            if (!emailRegex.hasMatch(value)) {
-              return "Invalid Email";
-            }
-          } else if (isPassword) {
-            if (value.length < 6) {
-              return "Password too short";
-            }
-          }
-          return null;
-        },
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.black26),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         ),
       ),
     );
