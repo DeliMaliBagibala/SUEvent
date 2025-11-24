@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'theme_constants.dart';
-import 'Event.dart'; // Importing Event class
+import 'home_page.dart'; // Importing Event class
 
 class DayEventsScreen extends StatefulWidget {
   final String dateString;
@@ -231,4 +231,5 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
       ),
     );
   }
+
 }
