@@ -308,7 +308,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Event info card with swipeable images
+                // swipeable images niye calismiyon
                 Container(
                   margin: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -318,13 +318,11 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Top info section
                       Padding(
                         padding: const EdgeInsets.all(8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Date and time
                             Text(
                               widget.event.time,
                               style: const TextStyle(
@@ -334,8 +332,6 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                               ),
                             ),
                             const SizedBox(height: 4),
-
-                            // Location
                             Text(
                               widget.event.location,
                               style: const TextStyle(
@@ -346,7 +342,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Description preview or full description
+                            // Preview or full description
                             if (!_showDescription)
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,7 +380,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Hello everyone, this will be our ${widget.event.title.toLowerCase()} event featuring a selection of acclaimed independent films. We'll be watching Pedro's films, along with popcorn and drinks. Join us for an evening of great cinema and discussion. The event starts at ${widget.event.time} at ${widget.event.location}. Feel free to bring your friends!",
+                                    "Hello everyone, this will be our ${widget.event.title.toLowerCase()} event featuring a selection of acclaimed Turkish films. We'll be watching Keloglan vs The Dark Prince. The event starts at ${widget.event.time} at ${widget.event.location}. Feel free to bring your friends!",
                                     style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.black87,
@@ -414,91 +410,75 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                         ),
                       ),
 
-                      // Swipeable image gallery
-                      // Swipeable image gallery - DEBUG VERSION
                       SizedBox(
                         height: 200,
-                        child: Container(
-                          color: Colors.red.withOpacity(0.3), // Debug border
-                          child: Stack(
-                            children: [
-                              // PageView with expanded touch area
-                              Positioned.fill(
-                                child: Container(
-                                  color: Colors.blue.withOpacity(0.3), // Debug border
-                                  child: PageView.builder(
-                                    itemCount: _eventImages.length,
-                                    physics: const PageScrollPhysics(),
-                                    onPageChanged: (index) {
-                                      setState(() {
-                                        _currentImageIndex = index;
-                                      });
-                                    },
-                                    itemBuilder: (context, index) {
+                        child: Stack(
+                          children: [
+                            PageView.builder(
+                              itemCount: _eventImages.length,
+                              physics: const PageScrollPhysics(),
+                              onPageChanged: (index) {
+                                setState(() {
+                                  _currentImageIndex = index;
+                                });
+                              },
+                              itemBuilder: (context, index) {
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Image.asset(
+                                    _eventImages[index],
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
                                       return Container(
-                                        margin: const EdgeInsets.symmetric(horizontal: 12),
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: Colors.green, width: 2), // Debug border
-                                        ),
-                                        child: Image.asset(
-                                          _eventImages.length > index ? _eventImages[index] : _eventImages[0],
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return Container(
-                                              color: Colors.grey[400],
-                                              child: const Center(
-                                                child: Icon(
-                                                  Icons.broken_image,
-                                                  size: 60,
-                                                  color: Colors.black38,
-                                                ),
-                                              ),
-                                            );
-                                          },
+                                        color: Colors.grey[400],
+                                        child: const Center(
+                                          child: Icon(
+                                            Icons.broken_image,
+                                            size: 60,
+                                            color: Colors.black38,
+                                          ),
                                         ),
                                       );
                                     },
                                   ),
-                                ),
-                              ),
+                                );
+                              },
+                            ),
 
-                              // Page indicator
-                              Positioned(
-                                bottom: 10,
-                                left: 0,
-                                right: 0,
-                                child: IgnorePointer(
-                                  child: Container(
-                                    color: Colors.yellow.withOpacity(0.3), // Debug border
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: List.generate(_eventImages.length, (index) {
-                                        return Container(
-                                          width: 8,
-                                          height: 8,
-                                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: _currentImageIndex == index
-                                                ? Colors.white
-                                                : Colors.white.withOpacity(0.5),
-                                          ),
-                                        );
-                                      }),
-                                    ),
-                                  ),
+                            Positioned(
+                              bottom: 10,
+                              left: 0,
+                              right: 0,
+                              child: IgnorePointer( 
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(_eventImages.length, (index) {
+                                    return Container(
+                                      width: 8,
+                                      height: 8,
+                                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: _currentImageIndex == index
+                                            ? Colors.white
+                                            : Colors.white.withOpacity(0.5),
+                                      ),
+                                    );
+                                  }),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       )
                     ],
                   ),
                 ),
 
-                // Action buttons row
+                // Action buttons
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
@@ -559,7 +539,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Comment list
+                      // Comment list, open to change in the future
                       ..._comments.map((comment) => _buildCommentItem(comment['comment']!,)),
 
                       const SizedBox(height: 24),
