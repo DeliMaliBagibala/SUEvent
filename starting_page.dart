@@ -6,8 +6,8 @@ void AlertDialogShower(context) {// Single AlertDialog function to call wherever
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text("Invalid Input"),
-      content: Text("Please correct your inputs in the form."),
+      title: Text("Your information is invalid!"),
+      content: Text("Please check your inputs in the form."),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
@@ -25,14 +25,41 @@ String? LoginRegisterValidation(value, hint, isPassword){// this is the common e
   if (hint.toLowerCase().contains("mail")) {
     final emailRegex = RegExp(r'^[\w-\.]+@sabanciuniv.edu$');
     if (!emailRegex.hasMatch(value)) {
-      return "Invalid Email (please use only ***@sabanciuniv.edu mails)";
+      return "Invalid Email (please use only *****@sabanciuniv.edu mails)";
     }
   } else if (isPassword) {
     if (value.length < 6) {
       return "Password too short (at least 6 characters)";
     }
+    if (value.length >= 24) {
+      return "Password too long (at most 24 characters)";
+    }
   }
   return null;
+}
+
+Widget _buildTextField(String hint, TextEditingController controller, {bool isPassword = false}) {
+  return Container(
+    decoration: BoxDecoration(
+      color: Color(0xFFF3E5F5),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: TextFormField(
+      controller: controller,
+      obscureText: isPassword,
+      style: TextStyle(color: Colors.black),
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      validator: (value) {
+        return LoginRegisterValidation(value, hint, isPassword);
+      },
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(color: Colors.black26),
+        border: InputBorder.none,
+        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      ),
+    ),
+  );
 }
 
 class StartingPage extends StatelessWidget {
@@ -250,30 +277,6 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
-  Widget _buildTextField(String hint, TextEditingController controller, {bool isPassword = false}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Color(0xFFF3E5F5),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TextFormField(
-        controller: controller,
-        obscureText: isPassword,
-        style: TextStyle(color: Colors.black),
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        validator: (value) {
-          return LoginRegisterValidation(value, hint, isPassword);
-        },
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.black26),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        ),
-      ),
-    );
-  }
 }
 
 class RegisterPage extends StatefulWidget {
@@ -372,30 +375,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(String hint, TextEditingController controller, {bool isPassword = false}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Color(0xFFF3E5F5),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TextFormField(
-        controller: controller,
-        obscureText: isPassword,
-        style: TextStyle(color: Colors.black),
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        validator: (value) {
-          return LoginRegisterValidation(value, hint, isPassword);
-        },
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.black26),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         ),
       ),
     );
