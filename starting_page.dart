@@ -1,6 +1,39 @@
 import 'package:flutter/material.dart';
 import 'theme_constants.dart';
-import 'Event.dart';
+import 'home_page.dart';
+
+void AlertDialogShower(context) {// Single AlertDialog function to call wherever needed
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text("Invalid Input"),
+      content: Text("Please correct your inputs in the form."),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text("OK"),
+        ),
+      ],
+    ),
+  );
+}
+
+String? LoginRegisterValidation(value, hint, isPassword){// this is the common email and password validation method.
+  if (value == null || value.isEmpty) {
+    return "Required";
+  }
+  if (hint.toLowerCase().contains("mail")) {
+    final emailRegex = RegExp(r'^[\w-\.]+@sabanciuniv.edu$');
+    if (!emailRegex.hasMatch(value)) {
+      return "Invalid Email (please use only ***@sabanciuniv.edu mails)";
+    }
+  } else if (isPassword) {
+    if (value.length < 6) {
+      return "Password too short (at least 6 characters)";
+    }
+  }
+  return null;
+}
 
 class StartingPage extends StatelessWidget {
   const StartingPage({super.key});
@@ -132,19 +165,7 @@ class _LoginPageState extends State<LoginPage> {
       );
     } else {
       // Show Alert Dialog if validation fails
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Invalid Input"),
-          content: Text("Please correct the errors in the form."),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("OK"),
-            ),
-          ],
-        ),
-      );
+      AlertDialogShower(context); // Please see line 5
     }
   }
 
@@ -242,20 +263,7 @@ class _LoginPageState extends State<LoginPage> {
         style: TextStyle(color: Colors.black),
         autovalidateMode: AutovalidateMode.onUserInteraction,
         validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Required";
-          }
-          if (hint.toLowerCase().contains("mail")) {
-            final emailRegex = RegExp(r'^[\w-\.]+@sabanciuniv.edu$');
-            if (!emailRegex.hasMatch(value)) {
-              return "Invalid Email";
-            }
-          } else if (isPassword) {
-            if (value.length < 6) {
-              return "Password too short";
-            }
-          }
-          return null;
+          return LoginRegisterValidation(value, hint, isPassword);
         },
         decoration: InputDecoration(
           hintText: hint,
@@ -301,19 +309,7 @@ class _RegisterPageState extends State<RegisterPage> {
             (route) => false,
       );
     } else {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Invalid Input"),
-          content: Text("Please correct the errors in the form."),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("OK"),
-            ),
-          ],
-        ),
-      );
+      AlertDialogShower(context);// PLease see line 5.
     }
   }
 
@@ -393,20 +389,7 @@ class _RegisterPageState extends State<RegisterPage> {
         style: TextStyle(color: Colors.black),
         autovalidateMode: AutovalidateMode.onUserInteraction,
         validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Required";
-          }
-          if (hint.toLowerCase().contains("mail")) {
-            final emailRegex = RegExp(r'^[\w-\.]+@sabanciuniv.edu$');
-            if (!emailRegex.hasMatch(value)) {
-              return "Invalid Email";
-            }
-          } else if (isPassword) {
-            if (value.length < 6) {
-              return "Password too short";
-            }
-          }
-          return null;
+          return LoginRegisterValidation(value, hint, isPassword);
         },
         decoration: InputDecoration(
           hintText: hint,
