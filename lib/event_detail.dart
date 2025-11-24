@@ -27,7 +27,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   bool _isBookmarked = false;
   bool _showDescription = false;
   int _currentImageIndex = 0;
-  int _selectedIndex = 0;
+  int _selectedIndex = 5;
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -157,7 +157,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     } else if (_selectedIndex == 4) {
       bodyContent = ProfilePage(onBackTap: onBackToHome);
     } else {
-      bodyContent = Center(child: Text("Page Index $_selectedIndex"));
+      bodyContent = eventDetails();
     }
 
     return Scaffold(
@@ -267,6 +267,307 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           color: AppColors.iconBlack,
         ),
       ),
+    );
+  }
+
+  Widget eventDetails() {
+    return Column(
+      children: [
+        Container(
+          color: AppColors.backgroundHeader,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_left, size: 40, color: Colors.black),
+                onPressed: () => Navigator.pop(context),
+              ),
+              Expanded(
+                child: Text(
+                  widget.event.title.toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(width: 48), // Balance the back button
+            ],
+          ),
+        ),
+
+        // Scrollable content
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Event info card with swipeable images
+                Container(
+                  margin: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.accentLight,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Top info section
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Date and time
+                            Text(
+                              widget.event.time,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+
+                            // Location
+                            Text(
+                              widget.event.location,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Description preview or full description
+                            if (!_showDescription)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Hello everyone, this will be our ${widget.event.title.toLowerCase()} event...",
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _showDescription = true;
+                                      });
+                                    },
+                                    child: const Text(
+                                      "View More",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blue,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            else
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Hello everyone, this will be our ${widget.event.title.toLowerCase()} event featuring a selection of acclaimed independent films. We'll be watching Pedro's films, along with popcorn and drinks. Join us for an evening of great cinema and discussion. The event starts at ${widget.event.time} at ${widget.event.location}. Feel free to bring your friends!",
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black87,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        _showDescription = false;
+                                      });
+                                    },
+                                    child: const Text(
+                                      "Show Less",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blue,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                          ],
+                        ),
+                      ),
+
+                      // Swipeable image gallery
+                      // Swipeable image gallery - DEBUG VERSION
+                      SizedBox(
+                        height: 200,
+                        child: Container(
+                          color: Colors.red.withOpacity(0.3), // Debug border
+                          child: Stack(
+                            children: [
+                              // PageView with expanded touch area
+                              Positioned.fill(
+                                child: Container(
+                                  color: Colors.blue.withOpacity(0.3), // Debug border
+                                  child: PageView.builder(
+                                    itemCount: _eventImages.length,
+                                    physics: const PageScrollPhysics(),
+                                    onPageChanged: (index) {
+                                      setState(() {
+                                        _currentImageIndex = index;
+                                      });
+                                    },
+                                    itemBuilder: (context, index) {
+                                      return Container(
+                                        margin: const EdgeInsets.symmetric(horizontal: 12),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: Colors.green, width: 2), // Debug border
+                                        ),
+                                        child: Image.asset(
+                                          _eventImages.length > index ? _eventImages[index] : _eventImages[0],
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return Container(
+                                              color: Colors.grey[400],
+                                              child: const Center(
+                                                child: Icon(
+                                                  Icons.broken_image,
+                                                  size: 60,
+                                                  color: Colors.black38,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+
+                              // Page indicator
+                              Positioned(
+                                bottom: 10,
+                                left: 0,
+                                right: 0,
+                                child: IgnorePointer(
+                                  child: Container(
+                                    color: Colors.yellow.withOpacity(0.3), // Debug border
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: List.generate(_eventImages.length, (index) {
+                                        return Container(
+                                          width: 8,
+                                          height: 8,
+                                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: _currentImageIndex == index
+                                                ? Colors.white
+                                                : Colors.white.withOpacity(0.5),
+                                          ),
+                                        );
+                                      }),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+
+                // Action buttons row
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildActionButton(
+                        icon: Icons.add,
+                        isActive: _isAttending,
+                        onTap: () {
+                          setState(() {
+                            _isAttending = !_isAttending;
+                          });
+                          print("Attend button pressed: $_isAttending");
+                        },
+                      ),
+                      _buildActionButton(
+                        icon: Icons.chat_bubble_outline,
+                        isActive: false,
+                        onTap: _handleCommentTap,
+                      ),
+                      _buildActionButton(
+                        icon: Icons.bookmark_border,
+                        isActive: _isBookmarked,
+                        activeIcon: Icons.bookmark,
+                        onTap: () {
+                          setState(() {
+                            _isBookmarked = !_isBookmarked;
+                          });
+                          print("Bookmark button pressed: $_isBookmarked");
+                        },
+                      ),
+                      _buildActionButton(
+                        icon: Icons.send,
+                        isActive: false,
+                        onTap: () {
+                          print("Share button pressed");
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Comments section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Comments:",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Comment list
+                      ..._comments.map((comment) => _buildCommentItem(comment['comment']!,)),
+
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+      ],
     );
   }
 
