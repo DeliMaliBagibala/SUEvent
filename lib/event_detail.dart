@@ -27,8 +27,13 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   bool _isBookmarked = false;
   bool _showDescription = false;
   int _currentImageIndex = 0;
-  int _selectedIndex = 0;
+  int _selectedIndex = 5;
   void _onItemTapped(int index) {
+    if (index == 0) {
+      // If Home is clicked, go back to the main HomePage
+      Navigator.pop(context);
+      return;
+    }
     setState(() {
       _selectedIndex = index;
     });
@@ -157,7 +162,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     } else if (_selectedIndex == 4) {
       bodyContent = ProfilePage(onBackTap: onBackToHome);
     } else {
-      bodyContent = Center(child: Text("Page Index $_selectedIndex"));
+          //FIXME
+          bodyContent = EventDetailScreen(event: event,  onBackTap: () => Navigator.pop(context),);
     }
 
     return Scaffold(
