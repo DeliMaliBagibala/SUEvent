@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'profile_page.dart';
 import 'calendar_screen.dart';
 import 'theme_constants.dart';
-import 'home_page.dart';
+import 'home_page.dart'; // Contains Event, HomePage, SearchScreen, CreateEventScreen, EventCard
 
 class EventDetailScreen extends StatefulWidget {
   final Event event;
@@ -12,10 +12,9 @@ class EventDetailScreen extends StatefulWidget {
   const EventDetailScreen({
     super.key,
     required this.event,
-    this.isLoggedIn = false, // Default to false in case guest mode
+    this.isLoggedIn = false,
     required this.onBackTap,
   });
-
 
 
   @override
@@ -27,10 +26,13 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   bool _isBookmarked = false;
   bool _showDescription = false;
   int _currentImageIndex = 0;
+  // We use 5 as the default index to ensure eventDetails() is shown initially
   int _selectedIndex = 5;
+
   void _onItemTapped(int index) {
+    // If user taps the home button (index 0), navigate back to the previous screen (Home in the main app flow)
     if (index == 0) {
-      Navigator.pop(context);
+      widget.onBackTap(); // This should be popping back to the main navigation, which often goes to the HomePage
       return;
     }
     setState(() {
@@ -41,19 +43,11 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   final TextEditingController _commentController = TextEditingController();
 
 
-
   final List<Map<String, String>> _comments = [
-    {'comment': 'WOW im definitely coming!!!',
-      'username': 'student1',    },
-    {'comment': 'i have a lab tomorrow :(',
-     'username': 'baris_manco',},
-    {'comment': 'dummy comment',
-    'username': 'dummy_user',
-    },
-
-    {'comment': 'ilk yorum',
-    'username': 'funny_student',
-    },
+    {'comment': 'WOW im definitely coming!!!', 'username': 'student1'},
+    {'comment': 'i have a lab tomorrow :(', 'username': 'baris_manco'},
+    {'comment': 'dummy comment', 'username': 'dummy_user'},
+    {'comment': 'ilk yorum', 'username': 'funny_student'},
   ];
 
   // Dummy images for now
@@ -70,16 +64,9 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   }
 
 
-  void _handleCommentTap() {
-    if (!widget.isLoggedIn) {
 
-      Navigator.pushNamed(context, '/login').then((_) {
-       //login code needed
-      });
-    } else {
-      // Show comment input dialog
-      _showCommentDialog();
-    }
+  void _handleCommentTap() {
+    _showCommentDialog();
     print("Comment button pressed");
   }
 
@@ -121,9 +108,12 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
               ),
               onPressed: () {
                 if (_commentController.text.trim().isNotEmpty) {
+
                   setState(() {
                     _comments.insert(0, {
-                      'username': _commentController.text.trim(),
+                      // Using a generic name for comments from any user/guest
+                      'username': widget.isLoggedIn ? 'Current User' : 'Guest',
+                      'comment': _commentController.text.trim(),
                     });
                   });
                   _commentController.clear();
@@ -151,13 +141,13 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     final VoidCallback onBackToHome = () => _onItemTapped(0);
 
     if (_selectedIndex == 0) {
-      bodyContent = HomePage();
+      bodyContent = const HomePage();
     } else if (_selectedIndex == 1) {
       bodyContent = SearchScreen(onBackTap: onBackToHome);
     } else if (_selectedIndex == 2) {
       bodyContent = CreateEventScreen(onBackTap: onBackToHome);
     } else if (_selectedIndex == 3) {
-      bodyContent = CalendarScreen(onBackTap: onBackToHome);
+      bodyContent = CalendarScreen(onBackTap: () {});
     } else if (_selectedIndex == 4) {
       bodyContent = ProfilePage(onBackTap: onBackToHome);
     } else {
@@ -218,7 +208,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     );
   }
 
-  Widget _buildCommentItem(String comment) {
+  Widget _buildCommentItem(Map<String, String> commentData) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -228,10 +218,10 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
       ),
       child: Row(
         children: [
-          CircleAvatar(
+          const CircleAvatar(
             radius: 20,
             backgroundColor: Colors.white,
-            child: const Icon(
+            child: Icon(
               Icons.person,
               color: Colors.black54,
               size: 24,
@@ -239,19 +229,33 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              comment,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black,
-                fontWeight: FontWeight.w500,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  commentData['username'] ?? 'Unknown User',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.black54,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  commentData['comment'] ?? '',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
+
 
   Widget _buildNavItem(IconData icon, int index, {bool isActive = false}) {
     return GestureDetector(
@@ -308,7 +312,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // swipeable images niye calismiyon
+                // Event info card with swipeable images
                 Container(
                   margin: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -318,11 +322,13 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Top info section
                       Padding(
                         padding: const EdgeInsets.all(8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Date and time
                             Text(
                               widget.event.time,
                               style: const TextStyle(
@@ -332,6 +338,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                               ),
                             ),
                             const SizedBox(height: 4),
+
+                            // Location
                             Text(
                               widget.event.location,
                               style: const TextStyle(
@@ -342,7 +350,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Preview or full description
+                            // Description preview or full description
                             if (!_showDescription)
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -410,6 +418,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                         ),
                       ),
 
+                      // Swipeable image gallery
                       SizedBox(
                         height: 200,
                         child: Stack(
@@ -428,6 +437,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
+                                  // This assumes the assets folder is correctly configured
                                   child: Image.asset(
                                     _eventImages[index],
                                     fit: BoxFit.cover,
@@ -448,11 +458,12 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                               },
                             ),
 
+                            // Page indicator
                             Positioned(
                               bottom: 10,
                               left: 0,
                               right: 0,
-                              child: IgnorePointer( 
+                              child: IgnorePointer(
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: List.generate(_eventImages.length, (index) {
@@ -478,7 +489,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   ),
                 ),
 
-                // Action buttons
+                // Action buttons row
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
@@ -539,8 +550,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Comment list, open to change in the future
-                      ..._comments.map((comment) => _buildCommentItem(comment['comment']!,)),
+                      ..._comments.map((commentData) => _buildCommentItem(commentData)),
 
                       const SizedBox(height: 24),
                     ],
@@ -550,10 +560,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
             ),
           ),
         ),
-
       ],
     );
   }
-
-
 }
