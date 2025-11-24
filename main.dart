@@ -5,4 +5,3 @@ void main() {
   runApp(const EventApp());
 }
 
-
