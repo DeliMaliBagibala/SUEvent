@@ -130,7 +130,7 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.backgroundHeader, // Darker grey for card background
+        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -233,3 +233,4 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
   }
 
 }
+
