@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'event_detail.dart';
 import 'theme_constants.dart';
-import 'Event.dart'; // Importing Event class
+import 'home_page.dart';
 
 class DayEventsScreen extends StatefulWidget {
   final String dateString;
@@ -12,7 +13,6 @@ class DayEventsScreen extends StatefulWidget {
 }
 
 class _DayEventsScreenState extends State<DayEventsScreen> {
-  // Default filter selection
   String _selectedCategory = 'All';
 
   // Dummy data for this specific day
@@ -25,7 +25,6 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Filter events based on selection
     final filteredEvents = _selectedCategory == 'All'
         ? _allEvents
         : _allEvents.where((e) => e.category == _selectedCategory).toList();
@@ -35,9 +34,8 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // 1. Header (Back Button + Date)
             Container(
-              color: AppColors.backgroundHeader, // Matching the grey header style
+              color: AppColors.backgroundHeader,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               child: Row(
                 children: [
@@ -57,9 +55,9 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
               ),
             ),
 
-            // 2. Filter Row (Sort By)
+
             Container(
-              color: AppColors.accentLight, // Light grey strip
+              color: AppColors.accentLight,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -72,7 +70,6 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
                       color: Colors.black,
                     ),
                   ),
-                  // Dropdown for categories
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
@@ -108,7 +105,6 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
               ),
             ),
 
-            // 3. Event List
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.all(16),
@@ -123,26 +119,23 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
       ),
     );
   }
-
-  // Custom Card Widget for this screen to match the image
   Widget _buildDayEventCard(Event event) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.backgroundHeader, // Darker grey for card background
+        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
-          // White Circle Avatar
           const CircleAvatar(
             radius: 28,
             backgroundColor: Colors.white,
           ),
           const SizedBox(width: 16),
 
-          // Event Details (Middle)
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,21 +176,26 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
             ),
           ),
 
-          // Button and Time (Right)
           Column(
             children: [
               ElevatedButton(
                 onPressed: () {
-                  // REQUIRED CONSOLE OUTPUT
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EventDetailScreen(event: event,  onBackTap: () => Navigator.pop(context),),
+
+                    ),
+                  );
                   print("View Event Button Pressed!");
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFBDBDBD), // Light greyish button
+                  backgroundColor: const Color(0xFFBDBDBD),
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  minimumSize: Size.zero, // Allows compact size
+                  minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Row(
@@ -231,5 +229,4 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
       ),
     );
   }
-
 }

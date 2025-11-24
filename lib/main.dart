@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'Event.dart';
+import 'home_page.dart';
 
 void main() {
   runApp(const EventApp());

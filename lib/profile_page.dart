@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'theme_constants.dart';
-import 'Event.dart';
+import 'home_page.dart';
 
 // Result object used when coming back from the edit page.
 class ProfileEditResult {

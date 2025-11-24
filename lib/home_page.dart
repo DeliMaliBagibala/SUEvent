@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'event_detail.dart';
 import 'theme_constants.dart';
 import 'calendar_screen.dart';
 import 'starting_page.dart';
 import 'profile_page.dart';
-import 'event_detail.dart';
+
 class EventApp extends StatelessWidget {
   const EventApp({super.key});
 
@@ -572,14 +573,13 @@ class EventCard extends StatelessWidget {
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    print("Detailed event page button pressed");
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => EventDetailScreen(event: event,  onBackTap: () => Navigator.pop(context),),
-
                       ),
                     );
+                    print("Detailed event page button pressed"); //NAVIGATE TO event_detail page
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.textWhite.withOpacity(0.5),
