@@ -29,6 +29,10 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   int _currentImageIndex = 0;
   int _selectedIndex = 5;
   void _onItemTapped(int index) {
+    if (index == 0) {
+      Navigator.pop(context);
+      return;
+    }
     setState(() {
       _selectedIndex = index;
     });
