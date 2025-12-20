@@ -1,13 +1,15 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'theme_constants.dart';
 import 'home_page.dart';
 
-void AlertDialogShower(context) {// Single AlertDialog function to call wherever needed
+void AlertDialogShower(context, String title, String message) {
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text("Your information is invalid!"),
-      content: Text("Please check your inputs in the form."),
+      title: Text(title),
+      content: Text(message),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
@@ -18,7 +20,7 @@ void AlertDialogShower(context) {// Single AlertDialog function to call wherever
   );
 }
 
-String? LoginRegisterValidation(value, hint, isPassword){// this is the common email and password validation method.
+String? LoginRegisterValidation(value, hint, isPassword){
   if (value == null || value.isEmpty) {
     return "Required";
   }
@@ -30,9 +32,6 @@ String? LoginRegisterValidation(value, hint, isPassword){// this is the common e
   } else if (isPassword) {
     if (value.length < 6) {
       return "Password too short (at least 6 characters)";
-    }
-    if (value.length >= 24) {
-      return "Password too long (at most 24 characters)";
     }
   }
   return null;
@@ -172,6 +171,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -180,19 +180,53 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _trySubmit() {
-    // This triggers all validators. If any return a string, isValid is false.
+  Future<void> _trySubmit() async {
     final isValid = _formKey.currentState?.validate() ?? false;
 
-    if (isValid) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-            (route) => false,
+    if (!isValid) {
+      AlertDialogShower(context, "Invalid Input", "Please check your inputs.");
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
-    } else {
-      // Show Alert Dialog if validation fails
-      AlertDialogShower(context); // Please see line 5
+      
+      if (mounted) {
+         Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+              (route) => false,
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String message = "An error occurred, please check your credentials!";
+      if (e.code == 'user-not-found') {
+        message = 'No user found for that email.';
+      } else if (e.code == 'wrong-password') {
+        message = 'Wrong password provided for that user.';
+      } else if (e.code == 'invalid-credential') {
+        message = 'Invalid email or password.';
+      }
+       if (mounted) {
+        AlertDialogShower(context, "Login Failed", message);
+      }
+    } catch (e) {
+       if (mounted) {
+        AlertDialogShower(context, "Error", e.toString());
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -238,14 +272,16 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _trySubmit,
+                    onPressed: _isLoading ? null : _trySubmit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black54,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: Text(
+                    child: _isLoading
+                        ? CircularProgressIndicator(color: Colors.white)
+                        : Text(
                       "Login",
                       style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
@@ -292,6 +328,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -302,17 +339,69 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  void _trySubmit() {
+  Future<void> _trySubmit() async {
     final isValid = _formKey.currentState?.validate() ?? false;
 
-    if (isValid) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-            (route) => false,
+    if (!isValid) {
+      AlertDialogShower(context, "Invalid Input", "Please check your inputs.");
+      return;
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+       AlertDialogShower(context, "Password Mismatch", "Passwords do not match!");
+       return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // 1. Create user in Firebase Auth
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
-    } else {
-      AlertDialogShower(context);// PLease see line 5.
+
+      // 2. Create user document in Firestore 'users' collection
+      // We use the UID from Auth as the document ID
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set({
+        'username': _usernameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'bio': '', // Initialize with empty bio
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+              (route) => false,
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String message = "Registration failed.";
+      if (e.code == 'weak-password') {
+        message = 'The password provided is too weak.';
+      } else if (e.code == 'email-already-in-use') {
+        message = 'The account already exists for that email.';
+      }
+      if (mounted) {
+        AlertDialogShower(context, "Registration Error", message);
+      }
+    } catch (e) {
+      if (mounted) {
+        AlertDialogShower(context, "Error", e.toString());
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -358,14 +447,16 @@ class _RegisterPageState extends State<RegisterPage> {
                   SizedBox(
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: _trySubmit,
+                      onPressed: _isLoading ? null : _trySubmit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black54,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Text(
+                      child: _isLoading 
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Text(
                         "Register",
                         style: TextStyle(color: Colors.white, fontSize: 18),
                       ),

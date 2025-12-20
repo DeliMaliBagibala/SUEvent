@@ -35,49 +35,70 @@ class _ProfilePageState extends State<ProfilePage> {
   // Upcoming and Attended Lists
   final List<Event> _upcomingEvents = [
     Event(
+      id: "1",
       title: "Upcoming Event 1",
       location: "FMAN G098",
       category: "Category-1",
       time: "09.00",
+      date: "01/01/2026",
+      description: "Description 1",
     ),
     Event(
+      id: "2",
       title: "Upcoming Event 2",
       location: "FMAN G098",
       category: "Category-1",
       time: "09.00",
+      date: "01/01/2026",
+      description: "Description 2",
     ),
     Event(
+      id: "3",
       title: "Upcoming Event 3",
       location: "FMAN G098",
       category: "Category-1",
       time: "09.00",
+      date: "01/01/2026",
+      description: "Description 3",
     ),
     Event(
+      id: "4",
       title: "Upcoming Event 4",
       location: "FMAN G098",
       category: "Category-1",
       time: "09.00",
+      date: "01/01/2026",
+      description: "Description 4",
     ),
     Event(
+      id: "5",
       title: "Upcoming Event 5",
       location: "FMAN G098",
       category: "Category-1",
       time: "09.00",
+      date: "01/01/2026",
+      description: "Description 5",
     ),
     Event(
+      id: "6",
       title: "Movie Night",
       location: "FMAN G098",
       category: "Category-2",
       time: "21.30",
+      date: "01/01/2026",
+      description: "Movie Night Description",
     ),
   ];
 
   final List<Event> _attendedEvents = [
     Event(
+      id: "7",
       title: "Past Event",
       location: "FMAN G098",
       category: "Category-3",
       time: "18.00",
+      date: "01/01/2025",
+      description: "Past Event Description",
     ),
   ];
 

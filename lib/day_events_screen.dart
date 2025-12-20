@@ -17,10 +17,42 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
 
   // Dummy data for this specific day
   final List<Event> _allEvents = [
-    Event(title: "Sample Event 1", location: "FMAN G098", category: "Category-1", time: "09.00"),
-    Event(title: "Sample Event 3", location: "UC 1023", category: "Category-1", time: "20.00"),
-    Event(title: "Movie Night", location: "FMAN G089", category: "Category-2", time: "21.30"),
-    Event(title: "Sample Event X", location: "UC G030", category: "Category-3", time: "14.00"),
+    Event(
+      id: "sample_1",
+      title: "Sample Event 1",
+      location: "FMAN G098",
+      category: "Category-1",
+      time: "09.00",
+      date: "01/01/2026",
+      description: "Description",
+    ),
+    Event(
+      id: "sample_2",
+      title: "Sample Event 3",
+      location: "UC 1023",
+      category: "Category-1",
+      time: "20.00",
+      date: "01/01/2026",
+      description: "Description",
+    ),
+    Event(
+      id: "sample_3",
+      title: "Movie Night",
+      location: "FMAN G089",
+      category: "Category-2",
+      time: "21.30",
+      date: "01/01/2026",
+      description: "Description",
+    ),
+    Event(
+      id: "sample_4",
+      title: "Sample Event X",
+      location: "UC G030",
+      category: "Category-3",
+      time: "14.00",
+      date: "01/01/2026",
+      description: "Description",
+    ),
   ];
 
   @override

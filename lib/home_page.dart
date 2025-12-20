@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'event_detail.dart';
 import 'theme_constants.dart';
@@ -29,17 +30,36 @@ class EventApp extends StatelessWidget {
 }
 
 class Event {
+  final String id;
   final String title;
   final String location;
   final String category;
   final String time;
+  final String date;
+  final String description;
 
   Event({
+    required this.id,
     required this.title,
     required this.location,
     required this.category,
     required this.time,
+    required this.date,
+    required this.description,
   });
+
+  factory Event.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    return Event(
+      id: doc.id,
+      title: data['title'] ?? '',
+      location: data['location'] ?? '',
+      category: data['category'] ?? '',
+      time: data['time'] ?? '',
+      date: data['date'] ?? '',
+      description: data['description'] ?? '',
+    );
+  }
 }
 
 class HomePage extends StatefulWidget {
@@ -52,29 +72,29 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  final List<Event> _homeEvents = [
-    Event(title: "Sample Event 1", location: "FMAN G098", category: "Category-1", time: "09.00"),
-    Event(title: "Sample Event 3", location: "UC 1023", category: "Category-1", time: "20.00"),
-    Event(title: "Movie Night", location: "FMAN G098", category: "Category-2", time: "21.30"),
-  ];
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
 
-  void _deleteEvent(int index) {
-    setState(() {
-      _homeEvents.removeAt(index);
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Event deleted"),
-        duration: Duration(seconds: 1),
-      ),
-    );
+  Future<void> _deleteEvent(String eventId) async {
+    try {
+      await FirebaseFirestore.instance.collection('events').doc(eventId).delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Event deleted"),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to delete event: $e"),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override
@@ -149,13 +169,37 @@ class _HomePageState extends State<HomePage> {
         Expanded(
           child: Container(
             color: AppColors.backgroundDark,
-            child: ListView.builder(
-              padding: const EdgeInsets.all(AppDimens.pagePadding),
-              itemCount: _homeEvents.length,
-              itemBuilder: (context, index) {
-                return EventCard(
-                  event: _homeEvents[index],
-                  onDelete: () => _deleteEvent(index),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('events')
+                  .orderBy('date') // Optional: order by date if you add a 'date' or 'timestamp' field
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text("No upcoming events found."));
+                }
+
+                final docs = snapshot.data!.docs;
+                final events = docs.map((doc) => Event.fromFirestore(doc)).toList();
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(AppDimens.pagePadding),
+                  itemCount: events.length,
+                  itemBuilder: (context, index) {
+                    final event = events[index];
+                    return EventCard(
+                      event: event,
+                      onDelete: () => _deleteEvent(event.id),
+                    );
+                  },
                 );
               },
             ),
@@ -187,21 +231,17 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class SearchScreen extends StatelessWidget {
+class SearchScreen extends StatefulWidget {
   final VoidCallback onBackTap;
 
-  SearchScreen({super.key, required this.onBackTap});
+  const SearchScreen({super.key, required this.onBackTap});
 
-  final List<dynamic> searchItems = [
-    "01/01/2026",
-    Event(title: "Sample Event 1", location: "FMAN G098", category: "Category-1", time: "09.00"),
-    Event(title: "Sample Event 2", location: "FMAN G098", category: "Category-2", time: "10.00"),
-    Event(title: "Movie Night", location: "FMAN G098", category: "Category-1", time: "21.30"),
-    "02/01/2026",
-    Event(title: "Sample Event 4", location: "FMAN G098", category: "Category-1", time: "09.00"),
-    Event(title: "Sample Event 5", location: "FMAN G098", category: "Category-1", time: "11.00"),
-    Event(title: "Sample Event 6", location: "FMAN G098", category: "Category-1", time: "14.00"),
-  ];
+  @override
+  State<SearchScreen> createState() => _SearchScreenState();
+}
+
+class _SearchScreenState extends State<SearchScreen> {
+  String _searchQuery = "";
 
   @override
   Widget build(BuildContext context) {
@@ -214,7 +254,7 @@ class SearchScreen extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.arrow_left, size: AppDimens.iconLarge, color: AppColors.textBlack),
-                onPressed: onBackTap,
+                onPressed: widget.onBackTap,
               ),
               Expanded(
                 child: Container(
@@ -223,9 +263,14 @@ class SearchScreen extends StatelessWidget {
                     color: AppColors.textWhite,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const TextField(
+                  child: TextField(
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
                     style: AppTextStyles.labelLarge,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: "Search",
                       hintStyle: AppTextStyles.labelLarge,
                       prefixIcon: Icon(Icons.search, color: AppColors.textBlack, size: 28),
@@ -241,25 +286,38 @@ class SearchScreen extends StatelessWidget {
         Expanded(
           child: Container(
             color: AppColors.backgroundDark,
-            child: ListView.builder(
-              padding: const EdgeInsets.all(AppDimens.pagePadding),
-              itemCount: searchItems.length,
-              itemBuilder: (context, index) {
-                final item = searchItems[index];
-                if (item is String) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10, top: 10),
-                    child: Text(
-                      item,
-                      textAlign: TextAlign.right,
-                      style: AppTextStyles.dateHeader,
-                    ),
-                  );
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('events').snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
                 }
-                if (item is Event) {
-                  return EventCard(event: item);
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
                 }
-                return const SizedBox.shrink();
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text("No events found."));
+                }
+
+                var events = snapshot.data!.docs
+                    .map((doc) => Event.fromFirestore(doc))
+                    .where((event) {
+                      final query = _searchQuery.toLowerCase();
+                      return event.title.toLowerCase().contains(query) ||
+                             event.location.toLowerCase().contains(query) ||
+                             event.category.toLowerCase().contains(query);
+                    })
+                    .toList();
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(AppDimens.pagePadding),
+                  itemCount: events.length,
+                  itemBuilder: (context, index) {
+                    return EventCard(event: events[index]);
+                  },
+                );
               },
             ),
           ),
@@ -284,13 +342,19 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   late TextEditingController _dateController;
   late TextEditingController _timeController;
   late TextEditingController _categoryController;
+  late TextEditingController _descriptionController;
+  late TextEditingController _locationController; // Added location controller
+
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    _dateController = TextEditingController(text: "01/01/2000");
+    _dateController = TextEditingController(text: "01/01/2026");
     _timeController = TextEditingController(text: "00:00");
     _categoryController = TextEditingController(text: "Category 1");
+    _descriptionController = TextEditingController();
+    _locationController = TextEditingController(text: "FMAN G098"); // Default or empty
   }
 
   @override
@@ -298,7 +362,46 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     _dateController.dispose();
     _timeController.dispose();
     _categoryController.dispose();
+    _descriptionController.dispose();
+    _locationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _saveEvent() async {
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      await FirebaseFirestore.instance.collection('events').add({
+        'title': _eventTitle,
+        'date': _dateController.text,
+        'time': _timeController.text,
+        'category': _categoryController.text,
+        'description': _descriptionController.text,
+        'location': _locationController.text, // Save location
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Event created successfully!")),
+        );
+        widget.onBackTap(); // Go back to home
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error creating event: $e")),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
   }
 
   Future<void> _editTitle() async {
@@ -403,7 +506,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 48),
+                // Save Button
+                IconButton(
+                  icon: _isSaving
+                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.check, size: AppDimens.iconLarge, color: AppColors.textBlack),
+                  onPressed: _isSaving ? null : _saveEvent,
+                ),
               ],
             ),
           ),
@@ -418,6 +527,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 const SizedBox(height: 15),
                 _buildEditableRow("Time:", _timeController, () => _editField("Time", _timeController)),
                 const SizedBox(height: 15),
+                _buildEditableRow("Location:", _locationController, () => _editField("Location", _locationController)),
+                const SizedBox(height: 15),
                 _buildEditableRow("Category:", _categoryController, () => _editField("Category", _categoryController)),
 
                 const SizedBox(height: 30),
@@ -430,10 +541,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     color: AppColors.textWhite,
                     border: Border.all(color: Colors.black54),
                   ),
-                  child: const TextField(
+                  child: TextField(
+                    controller: _descriptionController,
                     maxLines: null,
-                    style: TextStyle(color: AppColors.textBlack),
-                    decoration: InputDecoration(
+                    style: const TextStyle(color: AppColors.textBlack),
+                    decoration: const InputDecoration(
                       hintText: "Add description",
                       hintStyle: TextStyle(color: Colors.black26),
                       border: InputBorder.none,
