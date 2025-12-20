@@ -19,6 +19,11 @@ class EventApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const StartingPage(),
+      routes: {
+        '/login': (context) => const LoginPage(),
+        '/register': (context) => const RegisterPage(),
+        '/home': (context) => const HomePage(),
+      },
     );
   }
 }
