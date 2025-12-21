@@ -197,7 +197,11 @@ class CalendarGrid extends StatelessWidget {
     final isCurrentMonth = day > 0;
     final eventCount = isCurrentMonth ? (eventsPerDay[day] ?? 0) : 0;
     final textColor = isCurrentMonth ? AppColors.textBlack : Colors.black45;
-    final monthName = _getMonthName(currentDate.month);
+    
+    // Construct date string formatted as dd/MM/yyyy to match database format
+    final dateString = isCurrentMonth 
+        ? "${day.toString().padLeft(2, '0')}/${currentDate.month.toString().padLeft(2, '0')}/${currentDate.year}"
+        : "";
 
     return Container(
       decoration: BoxDecoration(
@@ -211,10 +215,10 @@ class CalendarGrid extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => DayEventsScreen(dateString: "$day, $monthName"),
+                builder: (context) => DayEventsScreen(dateString: dateString),
               ),
             );
-            print("Tapped day $day");
+            print("Tapped day $day, date: $dateString");
           }
               : null,
           child: Padding(
