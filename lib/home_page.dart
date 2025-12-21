@@ -693,7 +693,7 @@ class EventCard extends StatelessWidget {
                 ),
                 if (onDelete != null && isCreator) // Only show delete button if user is creator
                   IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                    icon: const Icon(Icons.delete, color: AppColors.textBlack, size: 20),
                     onPressed: onDelete,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),

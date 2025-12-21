@@ -5,7 +5,7 @@ import 'home_page.dart'; // Imports EventCard
 import 'providers/auth_provider.dart';
 import 'providers/event_provider.dart';
 import 'models/event_model.dart';
-import 'starting_page.dart'; // Import LoginPage
+import 'starting_page.dart'; // Import for LoginPage
 
 // Result object used when coming back from the edit page.
 class ProfileEditResult {
@@ -67,9 +67,9 @@ class _ProfilePageState extends State<ProfilePage> {
     final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
     await authProvider.logout();
     if (mounted) {
-      // Navigate to the login screen and remove all previous routes
+      // Navigate to the StartingPage and remove all previous routes
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginPage()),
+        MaterialPageRoute(builder: (context) => const StartingPage()),
         (Route<dynamic> route) => false,
       );
     }
@@ -129,7 +129,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: EdgeInsets.zero,
                       ),
                       IconButton(
-                        icon: const Icon(Icons.logout, size: 28, color: Colors.redAccent),
+                        icon: const Icon(Icons.logout, size: 28, color: AppColors.textBlack),
                         onPressed: () => _logout(context),
                         tooltip: "Logout",
                       ),
