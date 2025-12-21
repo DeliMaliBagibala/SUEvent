@@ -25,10 +25,10 @@ class AppColors {
 
 class AppTextStyles {
   static TextStyle get headerLarge => TextStyle(
-    color: AppColors.textBlack.withOpacity(0.8),
-    fontSize: 28,
-    fontWeight: FontWeight.bold,
-  );
+        color: AppColors.textBlack.withOpacity(0.8),
+        fontSize: 28,
+        fontWeight: FontWeight.bold,
+      );
 
   static const TextStyle headerMedium = TextStyle(
     color: AppColors.textBlack,

@@ -157,10 +157,10 @@ class _HomePageState extends State<HomePage> {
         padding: const EdgeInsets.all(8),
         decoration: isActive
             ? BoxDecoration(
-          color: Colors.black.withOpacity(0.4),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.black54, width: 2),
-        )
+                color: Colors.black.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.black54, width: 2),
+              )
             : null,
         child: Icon(
           icon,
@@ -191,9 +191,43 @@ class _SearchScreenState extends State<SearchScreen> {
         final events = eventProvider.events.where((event) {
           final query = _searchQuery.toLowerCase();
           return event.title.toLowerCase().contains(query) ||
-                 event.location.toLowerCase().contains(query) ||
-                 event.category.toLowerCase().contains(query);
+              event.location.toLowerCase().contains(query) ||
+              event.category.toLowerCase().contains(query);
         }).toList();
+
+        // Sort events by date and time
+        events.sort((a, b) {
+          try {
+            final aDateParts = a.date.split('/');
+            final bDateParts = b.date.split('/');
+            final aDateTime = DateTime(int.parse(aDateParts[2]), int.parse(aDateParts[1]), int.parse(aDateParts[0]));
+            final bDateTime = DateTime(int.parse(bDateParts[2]), int.parse(bDateParts[1]), int.parse(bDateParts[0]));
+
+            int dateComparison = aDateTime.compareTo(bDateTime);
+            if (dateComparison != 0) return dateComparison;
+
+            final aTimeParts = a.time.split(':');
+            final bTimeParts = b.time.split(':');
+            final aTime = TimeOfDay(hour: int.parse(aTimeParts[0]), minute: int.parse(aTimeParts[1]));
+            final bTime = TimeOfDay(hour: int.parse(bTimeParts[0]), minute: int.parse(bTimeParts[1]));
+            final aTimeInMinutes = aTime.hour * 60 + aTime.minute;
+            final bTimeInMinutes = bTime.hour * 60 + bTime.minute;
+            return aTimeInMinutes.compareTo(bTimeInMinutes);
+          } catch (e) {
+            return 0;
+          }
+        });
+
+        // Group events by date
+        final Map<String, List<Event>> groupedEvents = {};
+        for (final event in events) {
+          if (groupedEvents.containsKey(event.date)) {
+            groupedEvents[event.date]!.add(event);
+          } else {
+            groupedEvents[event.date] = [event];
+          }
+        }
+        final uniqueDates = groupedEvents.keys.toList();
 
         return Column(
           children: [
@@ -238,13 +272,35 @@ class _SearchScreenState extends State<SearchScreen> {
                 color: AppColors.backgroundDark,
                 child: eventProvider.isLoading
                     ? const Center(child: CircularProgressIndicator())
-                    : events.isEmpty
+                    : uniqueDates.isEmpty
                         ? const Center(child: Text("No events found."))
                         : ListView.builder(
                             padding: const EdgeInsets.all(AppDimens.pagePadding),
-                            itemCount: events.length,
+                            itemCount: uniqueDates.length,
                             itemBuilder: (context, index) {
-                              return EventCard(event: events[index]);
+                              final date = uniqueDates[index];
+                              final eventsForDate = groupedEvents[date]!;
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(AppDimens.smallRadius),
+                                        border: Border.all(color: AppColors.textBlack.withOpacity(0.3)),
+                                      ),
+                                      child: Text(
+                                        date,
+                                        style: AppTextStyles.dateHeader,
+                                      ),
+                                    ),
+                                  ),
+                                  ...eventsForDate.map((event) => EventCard(event: event)).toList(),
+                                ],
+                              );
                             },
                           ),
               ),
@@ -297,10 +353,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
 
     if (authProvider.user == null) {
-       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("You must be logged in to create an event.")),
-        );
-        return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("You must be logged in to create an event.")),
+      );
+      return;
     }
 
     final newEvent = Event(
@@ -340,7 +397,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: AppColors.accentLight,
-          title: const Text("Event Name", style: TextStyle(color: AppColors.textBlack)),
+          title: const Text("Event Name",
+              style: TextStyle(color: AppColors.textBlack)),
           content: TextField(
             controller: controller,
             style: const TextStyle(color: AppColors.textBlack),
@@ -351,7 +409,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           ),
           actions: [
             TextButton(
-              child: const Text("Cancel", style: TextStyle(color: AppColors.textBlack)),
+              child: const Text("Cancel",
+                  style: TextStyle(color: AppColors.textBlack)),
               onPressed: () => Navigator.pop(context),
             ),
             TextButton(
@@ -387,7 +446,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           ),
           actions: [
             TextButton(
-              child: const Text("Cancel", style: TextStyle(color: AppColors.textBlack)),
+              child: const Text("Cancel",
+                  style: TextStyle(color: AppColors.textBlack)),
               onPressed: () => Navigator.pop(context),
             ),
             TextButton(
@@ -414,7 +474,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     );
     if (picked != null) {
       setState(() {
-        _dateController.text = "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
+        _dateController.text =
+            "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
       });
     }
   }
@@ -426,7 +487,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     );
     if (picked != null) {
       setState(() {
-        final String formattedTime = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+        final String formattedTime =
+            '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
         _timeController.text = formattedTime;
       });
     }
@@ -445,7 +507,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.arrow_left, size: AppDimens.iconLarge, color: AppColors.textBlack),
+                  icon: const Icon(Icons.arrow_left,
+                      size: AppDimens.iconLarge, color: AppColors.textBlack),
                   onPressed: widget.onBackTap,
                 ),
                 Expanded(
@@ -459,7 +522,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           style: AppTextStyles.headerMediumThin,
                         ),
                         const SizedBox(width: 10),
-                        const Icon(Icons.edit_outlined, color: AppColors.textBlack, size: AppDimens.iconSmall),
+                        const Icon(Icons.edit_outlined,
+                            color: AppColors.textBlack,
+                            size: AppDimens.iconSmall),
                       ],
                     ),
                   ),
@@ -467,30 +532,35 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 // Save Button
                 IconButton(
                   icon: eventProvider.isLoading
-                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.check, size: AppDimens.iconLarge, color: AppColors.textBlack),
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.check,
+                          size: AppDimens.iconLarge,
+                          color: AppColors.textBlack),
                   onPressed: eventProvider.isLoading ? null : _saveEvent,
                 ),
               ],
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-                _buildEditableRow("Date:", _dateController, () => _selectDate(context)),
+                _buildEditableRow(
+                    "Date:", _dateController, () => _selectDate(context)),
                 const SizedBox(height: 15),
-                _buildEditableRow("Time:", _timeController, () => _selectTime(context)),
+                _buildEditableRow(
+                    "Time:", _timeController, () => _selectTime(context)),
                 const SizedBox(height: 15),
-                _buildEditableRow("Location:", _locationController, () => _editField("Location", _locationController)),
+                _buildEditableRow("Location:", _locationController,
+                    () => _editField("Location", _locationController)),
                 const SizedBox(height: 15),
-                 _buildCategoryDropdown(),
-
+                _buildCategoryDropdown(),
                 const SizedBox(height: 30),
-
                 Container(
                   height: 80,
                   width: double.infinity,
@@ -512,47 +582,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                Row(
-                  children: [
-                    const Text(
-                      "Add Photo:",
-                      style: AppTextStyles.labelLarge,
-                    ),
-                    const SizedBox(width: 10),
-                    ElevatedButton(
-                      onPressed: () {
-                        print("Button tapped");
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.backgroundHeader,
-                        padding: const EdgeInsets.all(12),
-                      ),
-                      child: const Icon(Icons.add_a_photo_outlined, color: AppColors.textBlack, size: 24),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-
-                Center(
-                  child: Container(
-                    width: 200,
-                    height: 180,
-                    decoration: BoxDecoration(
-                      color: AppColors.accentLight,
-                      border: Border.all(color: Colors.transparent),
-                    ),
-                    child: const Icon(
-                      Icons.image_outlined,
-                      size: 80,
-                      color: AppColors.iconBlack,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 40),
               ],
             ),
           ),
@@ -581,7 +611,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 _selectedCategory = newValue!;
               });
             },
-            items: AppColors.categoryColors.keys.map<DropdownMenuItem<String>>((String value) {
+            items: AppColors.categoryColors.keys
+                .map<DropdownMenuItem<String>>((String value) {
               return DropdownMenuItem<String>(
                 value: value,
                 child: Text(value, style: AppTextStyles.labelLarge),
@@ -593,7 +624,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     );
   }
 
-  Widget _buildEditableRow(String label, TextEditingController controller, VoidCallback onEdit) {
+  Widget _buildEditableRow(
+      String label, TextEditingController controller, VoidCallback onEdit) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -615,7 +647,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.edit_outlined, color: AppColors.textBlack, size: AppDimens.iconSmall),
+                icon: const Icon(Icons.edit_outlined,
+                    color: AppColors.textBlack, size: AppDimens.iconSmall),
                 onPressed: onEdit,
                 constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
                 padding: EdgeInsets.zero,
@@ -636,7 +669,6 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if the current user is the creator
     final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
     final isCreator = authProvider.user?.uid == event.createdBy;
     final categoryColor = AppColors.categoryColors[event.category] ?? Colors.grey;
@@ -674,14 +706,17 @@ class EventCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: categoryColor,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           event.category,
-                          style: AppTextStyles.cardSubtitle.copyWith(decoration: TextDecoration.none, color: Colors.white),
+                          style: AppTextStyles.cardSubtitle.copyWith(
+                              decoration: TextDecoration.none,
+                              color: Colors.white),
                         ),
                       ),
                     ],
@@ -696,15 +731,20 @@ class EventCard extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => EventDetailScreen(event: event,  onBackTap: () => Navigator.pop(context),),
+                        builder: (context) => EventDetailScreen(
+                          event: event,
+                          onBackTap: () => Navigator.pop(context),
+                        ),
                       ),
                     );
-                    print("Detailed event page button pressed"); //NAVIGATE TO event_detail page
+                    print(
+                        "Detailed event page button pressed"); //NAVIGATE TO event_detail page
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.textWhite.withOpacity(0.5),
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppDimens.buttonRadius),
                     ),
@@ -720,7 +760,8 @@ class EventCard extends StatelessWidget {
                         style: AppTextStyles.buttonSmall,
                       ),
                       SizedBox(width: 4),
-                      Icon(Icons.play_arrow, color: AppColors.textBlack, size: AppDimens.iconSmall),
+                      Icon(Icons.play_arrow,
+                          color: AppColors.textBlack, size: AppDimens.iconSmall),
                     ],
                   ),
                 ),
@@ -729,9 +770,11 @@ class EventCard extends StatelessWidget {
                   event.time,
                   style: AppTextStyles.bodyBold,
                 ),
-                if (onDelete != null && isCreator) // Only show delete button if user is creator
+                if (onDelete != null &&
+                    isCreator) // Only show delete button if user is creator
                   IconButton(
-                    icon: const Icon(Icons.delete, color: AppColors.textBlack, size: 20),
+                    icon: const Icon(Icons.delete,
+                        color: AppColors.textBlack, size: 20),
                     onPressed: onDelete,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
