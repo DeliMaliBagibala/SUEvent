@@ -49,35 +49,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> _deleteEvent(Event event) async {
-    final eventProvider = Provider.of<EventProvider>(context, listen: false);
-    final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
-
-    if (event.createdBy != authProvider.user?.uid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("You can only delete your own events.")),
-      );
-      return;
-    }
-    
-    await eventProvider.deleteEvent(event.id, event.createdBy);
-    
-    if (eventProvider.error != null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(eventProvider.error!)),
-        );
-        eventProvider.clearError();
-      }
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Event deleted")),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     Widget bodyContent;
@@ -168,7 +139,6 @@ class _HomePageState extends State<HomePage> {
                               final event = eventProvider.events[index];
                               return EventCard(
                                 event: event,
-                                onDelete: () => _deleteEvent(event),
                               );
                             },
                           ),
