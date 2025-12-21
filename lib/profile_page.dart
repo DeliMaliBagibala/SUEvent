@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'theme_constants.dart';
 import 'home_page.dart';
+import 'providers/auth_provider.dart';
+import 'providers/event_provider.dart';
+import 'models/event_model.dart';
 
 // Result object used when coming back from the edit page.
 class ProfileEditResult {
@@ -27,277 +31,260 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String _userName = "Your Name";
-  String _bioText = "";
+  
+  bool _showCreated = true; // Changed from 'Upcoming' to 'Created' events vs 'Saved/Attended'
 
-  bool _showUpcoming = true;
-
-  // Upcoming and Attended Lists
-  final List<Event> _upcomingEvents = [
-    Event(
-      id: "1",
-      title: "Upcoming Event 1",
-      location: "FMAN G098",
-      category: "Category-1",
-      time: "09.00",
-      date: "01/01/2026",
-      description: "Description 1",
-    ),
-    Event(
-      id: "2",
-      title: "Upcoming Event 2",
-      location: "FMAN G098",
-      category: "Category-1",
-      time: "09.00",
-      date: "01/01/2026",
-      description: "Description 2",
-    ),
-    Event(
-      id: "3",
-      title: "Upcoming Event 3",
-      location: "FMAN G098",
-      category: "Category-1",
-      time: "09.00",
-      date: "01/01/2026",
-      description: "Description 3",
-    ),
-    Event(
-      id: "4",
-      title: "Upcoming Event 4",
-      location: "FMAN G098",
-      category: "Category-1",
-      time: "09.00",
-      date: "01/01/2026",
-      description: "Description 4",
-    ),
-    Event(
-      id: "5",
-      title: "Upcoming Event 5",
-      location: "FMAN G098",
-      category: "Category-1",
-      time: "09.00",
-      date: "01/01/2026",
-      description: "Description 5",
-    ),
-    Event(
-      id: "6",
-      title: "Movie Night",
-      location: "FMAN G098",
-      category: "Category-2",
-      time: "21.30",
-      date: "01/01/2026",
-      description: "Movie Night Description",
-    ),
-  ];
-
-  final List<Event> _attendedEvents = [
-    Event(
-      id: "7",
-      title: "Past Event",
-      location: "FMAN G098",
-      category: "Category-3",
-      time: "18.00",
-      date: "01/01/2025",
-      description: "Past Event Description",
-    ),
-  ];
-
-  List<Event> get _visibleEvents =>
-      _showUpcoming ? _upcomingEvents : _attendedEvents;
-
-  Future<void> _openEditPage() async {
+  Future<void> _openEditPage(BuildContext context, String currentName, String currentBio) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => EditProfilePage(
-          initialName: _userName,
-          initialBio: _bioText,
+          initialName: currentName,
+          initialBio: currentBio,
         ),
       ),
     );
 
     if (result is ProfileEditResult) {
-      setState(() {
-        _userName = result.name.isEmpty ? "Your Name" : result.name;
-        _bioText = result.biography;
-      });
+      final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+      try {
+        await authProvider.updateProfile(
+          username: result.name,
+          bio: result.biography,
+        );
+      } catch (e) {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Failed to update profile: $e")),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+    await authProvider.logout();
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundHeader,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimens.pagePadding,
-            vertical: 16,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Back arrow
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.arrow_left,
-                    size: AppDimens.iconLarge,
-                    color: AppColors.textBlack,
-                  ),
-                  onPressed: widget.onBackTap,
-                  padding: EdgeInsets.zero,
-                ),
+    return Consumer2<AppAuthProvider, EventProvider>(
+      builder: (context, authProvider, eventProvider, child) {
+        
+        // Get user data
+        final userData = authProvider.userData;
+        final username = userData?['username'] ?? "User";
+        final bio = userData?['bio'] ?? "";
+        final currentUserId = authProvider.user?.uid;
+
+        // Filter events
+        final createdEvents = eventProvider.events.where((e) => e.createdBy == currentUserId).toList();
+        // For now, we don't have a separate 'attended' or 'saved' list in Firestore yet, 
+        // so we'll just show created events or empty list for the other tab.
+        final attendedEvents = <Event>[]; // Placeholder
+
+        final visibleEvents = _showCreated ? createdEvents : attendedEvents;
+
+        return Scaffold(
+          backgroundColor: AppColors.backgroundHeader,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimens.pagePadding,
+                vertical: 16,
               ),
-
-              const SizedBox(height: 8),
-
-              // Avatar, name and edit button
-              Center(
-                child: Column(
-                  children: [
-                    const CircleAvatar(
-                      radius: 45,
-                      backgroundColor: AppColors.accentLight,
-                      child: Icon(
-                        Icons.person_outline,
-                        size: AppDimens.iconLarge,
-                        color: AppColors.iconBlack,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Back arrow and Logout
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.arrow_left,
+                          size: AppDimens.iconLarge,
+                          color: AppColors.textBlack,
+                        ),
+                        onPressed: widget.onBackTap,
+                        padding: EdgeInsets.zero,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _userName,
-                      style: AppTextStyles.headerLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 36,
-                      child: ElevatedButton(
-                        onPressed: _openEditPage,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.cardBackground,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppDimens.buttonRadius,
+                      IconButton(
+                        icon: const Icon(
+                          Icons.logout,
+                          size: 28,
+                          color: Colors.redAccent,
+                        ),
+                        onPressed: () => _logout(context),
+                        tooltip: "Logout",
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Avatar, name and edit button
+                  Center(
+                    child: Column(
+                      children: [
+                        const CircleAvatar(
+                          radius: 45,
+                          backgroundColor: AppColors.accentLight,
+                          child: Icon(
+                            Icons.person_outline,
+                            size: AppDimens.iconLarge,
+                            color: AppColors.iconBlack,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          username,
+                          style: AppTextStyles.headerLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 36,
+                          child: ElevatedButton(
+                            onPressed: () => _openEditPage(context, username, bio),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.cardBackground,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppDimens.buttonRadius,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 28,
+                                vertical: 6,
+                              ),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              "Edit Profile",
+                              style: AppTextStyles.bodyBold,
                             ),
                           ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 28,
-                            vertical: 6,
-                          ),
-                          elevation: 0,
                         ),
-                        child: const Text(
-                          "Edit Profile",
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Biography section
+                  Text(
+                    "Biography",
+                    style: AppTextStyles.headerMediumThin,
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.accentLight,
+                      borderRadius: BorderRadius.circular(AppDimens.cardRadius),
+                    ),
+                    child: Text(
+                      bio.isEmpty
+                          ? "Write something about yourself..."
+                          : bio,
+                      style: AppTextStyles.bodyBold.copyWith(
+                        color: AppColors.textBlack,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Saved Events title with lines
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 1,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Text(
+                          "My Events",
                           style: AppTextStyles.bodyBold,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Biography section
-              Text(
-                "Biography",
-                style: AppTextStyles.headerMediumThin,
-              ),
-              const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.accentLight,
-                  borderRadius: BorderRadius.circular(AppDimens.cardRadius),
-                ),
-                child: Text(
-                  _bioText.isEmpty
-                      ? "Write something about yourself..."
-                      : _bioText,
-                  style: AppTextStyles.bodyBold.copyWith(
-                    color: AppColors.textBlack,
+                      Expanded(
+                        child: Container(
+                          height: 1,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ),
 
-              const SizedBox(height: 24),
+                  const SizedBox(height: 12),
 
-              // Saved Events title with lines
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 1,
-                      color: Colors.white,
-                    ),
+                  // Tabs: Created and Attended
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _ProfileTabButton(
+                          text: "Created Events",
+                          isSelected: _showCreated,
+                          onTap: () {
+                            setState(() {
+                              _showCreated = true;
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _ProfileTabButton(
+                          text: "Saved Events",
+                          isSelected: !_showCreated,
+                          onTap: () {
+                            setState(() {
+                              _showCreated = false;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(
-                      "Saved Events",
-                      style: AppTextStyles.bodyBold,
+
+                  const SizedBox(height: 12),
+
+                  // Event list
+                  if (visibleEvents.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Center(
+                        child: Text(
+                          _showCreated ? "You haven't created any events." : "No saved events yet.",
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                      ),
+                    )
+                  else
+                    Column(
+                      children: visibleEvents
+                          .map(
+                            (event) => EventCard(
+                          event: event,
+                        ),
+                      )
+                          .toList(),
                     ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      height: 1,
-                      color: Colors.white,
-                    ),
-                  ),
                 ],
               ),
-
-              const SizedBox(height: 12),
-
-              // Tabs: Upcoming and Attended
-              Row(
-                children: [
-                  Expanded(
-                    child: _ProfileTabButton(
-                      text: "Upcoming Events",
-                      isSelected: _showUpcoming,
-                      onTap: () {
-                        setState(() {
-                          _showUpcoming = true;
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _ProfileTabButton(
-                      text: "Attended Events",
-                      isSelected: !_showUpcoming,
-                      onTap: () {
-                        setState(() {
-                          _showUpcoming = false;
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              // Event list using EventCard from the Event.dart class.
-              Column(
-                children: _visibleEvents
-                    .map(
-                      (event) => EventCard(
-                    event: event,
-                  ),
-                )
-                    .toList(),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

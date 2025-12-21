@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'event_detail.dart';
 import 'theme_constants.dart';
 import 'home_page.dart';
+import 'models/event_model.dart'; // Import the Event model
 
 class DayEventsScreen extends StatefulWidget {
   final String dateString;
@@ -15,7 +16,7 @@ class DayEventsScreen extends StatefulWidget {
 class _DayEventsScreenState extends State<DayEventsScreen> {
   String _selectedCategory = 'All';
 
-  // Dummy data for this specific day
+  // Dummy data for this specific day using the correct Event model
   final List<Event> _allEvents = [
     Event(
       id: "sample_1",
@@ -25,6 +26,7 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
       time: "09.00",
       date: "01/01/2026",
       description: "Description",
+      createdBy: "dummy_user",
     ),
     Event(
       id: "sample_2",
@@ -34,6 +36,7 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
       time: "20.00",
       date: "01/01/2026",
       description: "Description",
+      createdBy: "dummy_user",
     ),
     Event(
       id: "sample_3",
@@ -43,6 +46,7 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
       time: "21.30",
       date: "01/01/2026",
       description: "Description",
+      createdBy: "dummy_user",
     ),
     Event(
       id: "sample_4",
@@ -52,6 +56,7 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
       time: "14.00",
       date: "01/01/2026",
       description: "Description",
+      createdBy: "dummy_user",
     ),
   ];
 

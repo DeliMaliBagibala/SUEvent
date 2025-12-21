@@ -1,8 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'theme_constants.dart';
 import 'home_page.dart';
+import 'providers/auth_provider.dart';
 
 void AlertDialogShower(context, String title, String message) {
   showDialog(
@@ -66,6 +67,13 @@ class StartingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if user is already logged in
+    final authProvider = Provider.of<AppAuthProvider>(context);
+    if (authProvider.isLoggedIn) {
+      // Use Future.microtask to navigate after the build frame is done
+      Future.microtask(() => Navigator.pushReplacementNamed(context, '/home'));
+    }
+
     return Scaffold(
       backgroundColor: AppColors.backgroundHeader,
       body: Center(
@@ -135,23 +143,6 @@ class StartingPage extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 40),
-              TextButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomePage()),
-                  );
-                },
-                child: Text(
-                  "Continue as guest",
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -171,7 +162,6 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -188,16 +178,13 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+    String? error = await authProvider.login(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+    );
 
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-      
+    if (error == null) {
       if (mounted) {
          Navigator.pushAndRemoveUntil(
           context,
@@ -205,33 +192,25 @@ class _LoginPageState extends State<LoginPage> {
               (route) => false,
         );
       }
-    } on FirebaseAuthException catch (e) {
-      String message = "An error occurred, please check your credentials!";
-      if (e.code == 'user-not-found') {
-        message = 'No user found for that email.';
-      } else if (e.code == 'wrong-password') {
-        message = 'Wrong password provided for that user.';
-      } else if (e.code == 'invalid-credential') {
-        message = 'Invalid email or password.';
-      }
+    } else {
        if (mounted) {
+        String message = "Login Failed";
+        if (error.contains('user-not-found')) {
+          message = 'No user found for that email.';
+        } else if (error.contains('wrong-password')) {
+          message = 'Wrong password provided for that user.';
+        } else if (error.contains('invalid-credential')) {
+          message = 'Invalid email or password.';
+        }
         AlertDialogShower(context, "Login Failed", message);
-      }
-    } catch (e) {
-       if (mounted) {
-        AlertDialogShower(context, "Error", e.toString());
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = Provider.of<AppAuthProvider>(context).isLoading;
+
     return Scaffold(
       backgroundColor: AppColors.backgroundHeader,
       body: SafeArea(
@@ -272,14 +251,14 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _trySubmit,
+                    onPressed: isLoading ? null : _trySubmit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black54,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: _isLoading
+                    child: isLoading
                         ? CircularProgressIndicator(color: Colors.white)
                         : Text(
                       "Login",
@@ -328,7 +307,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -352,29 +330,14 @@ class _RegisterPageState extends State<RegisterPage> {
        return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+    String? error = await authProvider.register(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+      _usernameController.text.trim(),
+    );
 
-    try {
-      // 1. Create user in Firebase Auth
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-
-      // 2. Create user document in Firestore 'users' collection
-      // We use the UID from Auth as the document ID
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userCredential.user!.uid)
-          .set({
-        'username': _usernameController.text.trim(),
-        'email': _emailController.text.trim(),
-        'bio': '', // Initialize with empty bio
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-      
+    if (error == null) {
       if (mounted) {
         Navigator.pushAndRemoveUntil(
           context,
@@ -382,31 +345,23 @@ class _RegisterPageState extends State<RegisterPage> {
               (route) => false,
         );
       }
-    } on FirebaseAuthException catch (e) {
-      String message = "Registration failed.";
-      if (e.code == 'weak-password') {
-        message = 'The password provided is too weak.';
-      } else if (e.code == 'email-already-in-use') {
-        message = 'The account already exists for that email.';
-      }
+    } else {
       if (mounted) {
+        String message = "Registration failed.";
+        if (error.contains('weak-password')) {
+          message = 'The password provided is too weak.';
+        } else if (error.contains('email-already-in-use')) {
+          message = 'The account already exists for that email.';
+        }
         AlertDialogShower(context, "Registration Error", message);
-      }
-    } catch (e) {
-      if (mounted) {
-        AlertDialogShower(context, "Error", e.toString());
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = Provider.of<AppAuthProvider>(context).isLoading;
+
     return Scaffold(
       backgroundColor: AppColors.backgroundHeader,
       body: SafeArea(
@@ -447,14 +402,14 @@ class _RegisterPageState extends State<RegisterPage> {
                   SizedBox(
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: _isLoading ? null : _trySubmit,
+                      onPressed: isLoading ? null : _trySubmit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black54,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: _isLoading 
+                      child: isLoading 
                           ? CircularProgressIndicator(color: Colors.white)
                           : Text(
                         "Register",

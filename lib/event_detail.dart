@@ -3,6 +3,7 @@ import 'profile_page.dart';
 import 'calendar_screen.dart';
 import 'theme_constants.dart';
 import 'home_page.dart';
+import 'models/event_model.dart';
 
 class EventDetailScreen extends StatefulWidget {
   final Event event;

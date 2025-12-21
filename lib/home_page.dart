@@ -1,10 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'event_detail.dart';
 import 'theme_constants.dart';
 import 'calendar_screen.dart';
 import 'starting_page.dart';
 import 'profile_page.dart';
+import 'models/event_model.dart';
+import 'providers/event_provider.dart';
+import 'providers/auth_provider.dart';
 
 class EventApp extends StatelessWidget {
   const EventApp({super.key});
@@ -29,39 +33,6 @@ class EventApp extends StatelessWidget {
   }
 }
 
-class Event {
-  final String id;
-  final String title;
-  final String location;
-  final String category;
-  final String time;
-  final String date;
-  final String description;
-
-  Event({
-    required this.id,
-    required this.title,
-    required this.location,
-    required this.category,
-    required this.time,
-    required this.date,
-    required this.description,
-  });
-
-  factory Event.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    return Event(
-      id: doc.id,
-      title: data['title'] ?? '',
-      location: data['location'] ?? '',
-      category: data['category'] ?? '',
-      time: data['time'] ?? '',
-      date: data['date'] ?? '',
-      description: data['description'] ?? '',
-    );
-  }
-}
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -78,22 +49,32 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> _deleteEvent(String eventId) async {
-    try {
-      await FirebaseFirestore.instance.collection('events').doc(eventId).delete();
+  Future<void> _deleteEvent(Event event) async {
+    final eventProvider = Provider.of<EventProvider>(context, listen: false);
+    final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+
+    if (event.createdBy != authProvider.user?.uid) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Event deleted"),
-          duration: Duration(seconds: 1),
-        ),
+        const SnackBar(content: Text("You can only delete your own events.")),
       );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Failed to delete event: $e"),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      return;
+    }
+    
+    await eventProvider.deleteEvent(event.id, event.createdBy);
+    
+    if (eventProvider.error != null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(eventProvider.error!)),
+        );
+        eventProvider.clearError();
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Event deleted")),
+        );
+      }
     }
   }
 
@@ -143,69 +124,59 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHomeContent() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
-          child: Text(
-            "Welcome Back, User!",
-            style: AppTextStyles.headerLarge,
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: AppDimens.pagePadding),
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-          decoration: BoxDecoration(
-            color: AppColors.accentLight,
-            borderRadius: BorderRadius.circular(AppDimens.smallRadius),
-          ),
-          child: const Text(
-            "Upcoming Events:",
-            style: AppTextStyles.bodyBold,
-          ),
-        ),
-        const SizedBox(height: 20),
-        Expanded(
-          child: Container(
-            color: AppColors.backgroundDark,
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('events')
-                  .orderBy('date') // Optional: order by date if you add a 'date' or 'timestamp' field
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
-
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("No upcoming events found."));
-                }
-
-                final docs = snapshot.data!.docs;
-                final events = docs.map((doc) => Event.fromFirestore(doc)).toList();
-
-                return ListView.builder(
-                  padding: const EdgeInsets.all(AppDimens.pagePadding),
-                  itemCount: events.length,
-                  itemBuilder: (context, index) {
-                    final event = events[index];
-                    return EventCard(
-                      event: event,
-                      onDelete: () => _deleteEvent(event.id),
-                    );
-                  },
-                );
-              },
+    return Consumer<EventProvider>(
+      builder: (context, eventProvider, child) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 30, 20, 20),
+              child: Consumer<AppAuthProvider>(
+                builder: (context, auth, _) {
+                  String username = auth.userData?['username'] ?? 'User';
+                  return Text(
+                    "Welcome Back, $username!",
+                    style: AppTextStyles.headerLarge,
+                  );
+                },
+              ),
             ),
-          ),
-        ),
-      ],
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: AppDimens.pagePadding),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              decoration: BoxDecoration(
+                color: AppColors.accentLight,
+                borderRadius: BorderRadius.circular(AppDimens.smallRadius),
+              ),
+              child: const Text(
+                "Upcoming Events:",
+                style: AppTextStyles.bodyBold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: Container(
+                color: AppColors.backgroundDark,
+                child: eventProvider.isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : eventProvider.events.isEmpty
+                        ? const Center(child: Text("No events found."))
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(AppDimens.pagePadding),
+                            itemCount: eventProvider.events.length,
+                            itemBuilder: (context, index) {
+                              final event = eventProvider.events[index];
+                              return EventCard(
+                                event: event,
+                                onDelete: () => _deleteEvent(event),
+                              );
+                            },
+                          ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -245,84 +216,72 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          color: AppColors.backgroundHeader,
-          padding: const EdgeInsets.fromLTRB(10, 20, 20, 20),
-          child: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_left, size: AppDimens.iconLarge, color: AppColors.textBlack),
-                onPressed: widget.onBackTap,
-              ),
-              Expanded(
-                child: Container(
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: AppColors.textWhite,
-                    borderRadius: BorderRadius.circular(10),
+    return Consumer<EventProvider>(
+      builder: (context, eventProvider, _) {
+        final events = eventProvider.events.where((event) {
+          final query = _searchQuery.toLowerCase();
+          return event.title.toLowerCase().contains(query) ||
+                 event.location.toLowerCase().contains(query) ||
+                 event.category.toLowerCase().contains(query);
+        }).toList();
+
+        return Column(
+          children: [
+            Container(
+              color: AppColors.backgroundHeader,
+              padding: const EdgeInsets.fromLTRB(10, 20, 20, 20),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_left, size: AppDimens.iconLarge, color: AppColors.textBlack),
+                    onPressed: widget.onBackTap,
                   ),
-                  child: TextField(
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                    style: AppTextStyles.labelLarge,
-                    decoration: const InputDecoration(
-                      hintText: "Search",
-                      hintStyle: AppTextStyles.labelLarge,
-                      prefixIcon: Icon(Icons.search, color: AppColors.textBlack, size: 28),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(vertical: 10),
+                  Expanded(
+                    child: Container(
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: AppColors.textWhite,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: TextField(
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value;
+                          });
+                        },
+                        style: AppTextStyles.labelLarge,
+                        decoration: const InputDecoration(
+                          hintText: "Search",
+                          hintStyle: AppTextStyles.labelLarge,
+                          prefixIcon: Icon(Icons.search, color: AppColors.textBlack, size: 28),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(vertical: 10),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: Container(
-            color: AppColors.backgroundDark,
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('events').snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
-
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("No events found."));
-                }
-
-                var events = snapshot.data!.docs
-                    .map((doc) => Event.fromFirestore(doc))
-                    .where((event) {
-                      final query = _searchQuery.toLowerCase();
-                      return event.title.toLowerCase().contains(query) ||
-                             event.location.toLowerCase().contains(query) ||
-                             event.category.toLowerCase().contains(query);
-                    })
-                    .toList();
-
-                return ListView.builder(
-                  padding: const EdgeInsets.all(AppDimens.pagePadding),
-                  itemCount: events.length,
-                  itemBuilder: (context, index) {
-                    return EventCard(event: events[index]);
-                  },
-                );
-              },
             ),
-          ),
-        ),
-      ],
+            Expanded(
+              child: Container(
+                color: AppColors.backgroundDark,
+                child: eventProvider.isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : events.isEmpty
+                        ? const Center(child: Text("No events found."))
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(AppDimens.pagePadding),
+                            itemCount: events.length,
+                            itemBuilder: (context, index) {
+                              return EventCard(event: events[index]);
+                            },
+                          ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -343,9 +302,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   late TextEditingController _timeController;
   late TextEditingController _categoryController;
   late TextEditingController _descriptionController;
-  late TextEditingController _locationController; // Added location controller
-
-  bool _isSaving = false;
+  late TextEditingController _locationController;
 
   @override
   void initState() {
@@ -354,7 +311,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     _timeController = TextEditingController(text: "00:00");
     _categoryController = TextEditingController(text: "Category 1");
     _descriptionController = TextEditingController();
-    _locationController = TextEditingController(text: "FMAN G098"); // Default or empty
+    _locationController = TextEditingController(text: "FMAN G098");
   }
 
   @override
@@ -368,38 +325,42 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   }
 
   Future<void> _saveEvent() async {
-    setState(() {
-      _isSaving = true;
-    });
+    final eventProvider = Provider.of<EventProvider>(context, listen: false);
+    final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
 
-    try {
-      await FirebaseFirestore.instance.collection('events').add({
-        'title': _eventTitle,
-        'date': _dateController.text,
-        'time': _timeController.text,
-        'category': _categoryController.text,
-        'description': _descriptionController.text,
-        'location': _locationController.text, // Save location
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+    if (authProvider.user == null) {
+       ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("You must be logged in to create an event.")),
+        );
+        return;
+    }
 
+    final newEvent = Event(
+      id: '', // Generated by Firestore
+      title: _eventTitle,
+      date: _dateController.text,
+      time: _timeController.text,
+      category: _categoryController.text,
+      description: _descriptionController.text,
+      location: _locationController.text,
+      createdBy: authProvider.user!.uid, // Set current user as creator
+    );
+
+    await eventProvider.addEvent(newEvent);
+
+    if (eventProvider.error != null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(eventProvider.error!)),
+        );
+        eventProvider.clearError();
+      }
+    } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Event created successfully!")),
         );
-        widget.onBackTap(); // Go back to home
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error creating event: $e")),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
+        widget.onBackTap();
       }
     }
   }
@@ -478,6 +439,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final eventProvider = Provider.of<EventProvider>(context);
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -508,10 +471,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 ),
                 // Save Button
                 IconButton(
-                  icon: _isSaving
+                  icon: eventProvider.isLoading
                       ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(Icons.check, size: AppDimens.iconLarge, color: AppColors.textBlack),
-                  onPressed: _isSaving ? null : _saveEvent,
+                  onPressed: eventProvider.isLoading ? null : _saveEvent,
                 ),
               ],
             ),
@@ -645,6 +608,10 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if the current user is the creator
+    final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+    final isCreator = authProvider.user?.uid == event.createdBy;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       color: AppColors.cardBackground,
@@ -726,7 +693,7 @@ class EventCard extends StatelessWidget {
                   event.time,
                   style: AppTextStyles.bodyBold,
                 ),
-                if (onDelete != null)
+                if (onDelete != null && isCreator) // Only show delete button if user is creator
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
                     onPressed: onDelete,
