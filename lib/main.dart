@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'starting_page.dart';
 import 'providers/auth_provider.dart';
 import 'providers/event_provider.dart';
+import 'theme_constants.dart'; // Added missing import
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
