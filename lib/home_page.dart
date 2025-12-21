@@ -267,10 +267,10 @@ class CreateEventScreen extends StatefulWidget {
 
 class _CreateEventScreenState extends State<CreateEventScreen> {
   String _eventTitle = "NEW EVENT";
+  String _selectedCategory = "Other";
 
   late TextEditingController _dateController;
   late TextEditingController _timeController;
-  late TextEditingController _categoryController;
   late TextEditingController _descriptionController;
   late TextEditingController _locationController;
 
@@ -279,7 +279,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     super.initState();
     _dateController = TextEditingController(text: "01/01/2026");
     _timeController = TextEditingController(text: "00:00");
-    _categoryController = TextEditingController(text: "Category 1");
     _descriptionController = TextEditingController();
     _locationController = TextEditingController(text: "FMAN G098");
   }
@@ -288,7 +287,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   void dispose() {
     _dateController.dispose();
     _timeController.dispose();
-    _categoryController.dispose();
     _descriptionController.dispose();
     _locationController.dispose();
     super.dispose();
@@ -310,7 +308,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       title: _eventTitle,
       date: _dateController.text,
       time: _timeController.text,
-      category: _categoryController.text,
+      category: _selectedCategory,
       description: _descriptionController.text,
       location: _locationController.text,
       createdBy: authProvider.user!.uid, // Set current user as creator
@@ -489,7 +487,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 const SizedBox(height: 15),
                 _buildEditableRow("Location:", _locationController, () => _editField("Location", _locationController)),
                 const SizedBox(height: 15),
-                _buildEditableRow("Category:", _categoryController, () => _editField("Category", _categoryController)),
+                 _buildCategoryDropdown(),
 
                 const SizedBox(height: 30),
 
@@ -563,6 +561,38 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     );
   }
 
+  Widget _buildCategoryDropdown() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const SizedBox(
+          width: 100,
+          child: Text(
+            "Category:",
+            style: AppTextStyles.labelLarge,
+          ),
+        ),
+        Expanded(
+          child: DropdownButton<String>(
+            value: _selectedCategory,
+            isExpanded: true,
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedCategory = newValue!;
+              });
+            },
+            items: AppColors.categoryColors.keys.map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value, style: AppTextStyles.labelLarge),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildEditableRow(String label, TextEditingController controller, VoidCallback onEdit) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -609,6 +639,7 @@ class EventCard extends StatelessWidget {
     // Check if the current user is the creator
     final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
     final isCreator = authProvider.user?.uid == event.createdBy;
+    final categoryColor = AppColors.categoryColors[event.category] ?? Colors.grey;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -621,9 +652,9 @@ class EventCard extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            const CircleAvatar(
+            CircleAvatar(
               radius: 28,
-              backgroundColor: AppColors.textWhite,
+              backgroundColor: categoryColor,
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -642,9 +673,16 @@ class EventCard extends StatelessWidget {
                         style: AppTextStyles.cardSubtitle,
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        event.category,
-                        style: AppTextStyles.cardSubtitle,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: categoryColor,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          event.category,
+                          style: AppTextStyles.cardSubtitle.copyWith(decoration: TextDecoration.none, color: Colors.white),
+                        ),
                       ),
                     ],
                   ),
@@ -682,7 +720,7 @@ class EventCard extends StatelessWidget {
                         style: AppTextStyles.buttonSmall,
                       ),
                       SizedBox(width: 4),
-                      Icon(Icons.play_arrow, color: AppColors.textWhite, size: AppDimens.iconSmall),
+                      Icon(Icons.play_arrow, color: AppColors.textBlack, size: AppDimens.iconSmall),
                     ],
                   ),
                 ),

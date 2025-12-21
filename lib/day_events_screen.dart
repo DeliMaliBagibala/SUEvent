@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'event_detail.dart';
 import 'theme_constants.dart';
 import 'home_page.dart';
-import 'models/event_model.dart'; // Ensure this import is present
+import 'models/event_model.dart'; 
 
 class DayEventsScreen extends StatefulWidget {
   final String dateString;
@@ -16,13 +16,13 @@ class DayEventsScreen extends StatefulWidget {
 class _DayEventsScreenState extends State<DayEventsScreen> {
   String _selectedCategory = 'All';
 
-  // Dummy data for this specific day
+  // Dummy data for this specific day using the new categories
   final List<Event> _allEvents = [
     Event(
       id: "sample_1",
       title: "Sample Event 1",
       location: "FMAN G098",
-      category: "Category-1",
+      category: "Food",
       time: "09.00",
       date: "01/01/2026",
       description: "Description",
@@ -32,7 +32,7 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
       id: "sample_2",
       title: "Sample Event 3",
       location: "UC 1023",
-      category: "Category-1",
+      category: "Clubs",
       time: "20.00",
       date: "01/01/2026",
       description: "Description",
@@ -42,7 +42,7 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
       id: "sample_3",
       title: "Movie Night",
       location: "FMAN G089",
-      category: "Category-2",
+      category: "Movies",
       time: "21.30",
       date: "01/01/2026",
       description: "Description",
@@ -52,7 +52,7 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
       id: "sample_4",
       title: "Sample Event X",
       location: "UC G030",
-      category: "Category-3",
+      category: "Games",
       time: "14.00",
       date: "01/01/2026",
       description: "Description",
@@ -128,7 +128,7 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
                             _selectedCategory = newValue!;
                           });
                         },
-                        items: <String>['All', 'Category-1', 'Category-2', 'Category-3']
+                        items: <String>['All', ...AppColors.categoryColors.keys]
                             .map<DropdownMenuItem<String>>((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
@@ -157,6 +157,8 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
     );
   }
   Widget _buildDayEventCard(Event event) {
+    final categoryColor = AppColors.categoryColors[event.category] ?? Colors.grey;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
@@ -166,9 +168,9 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
       ),
       child: Row(
         children: [
-          const CircleAvatar(
+          CircleAvatar(
             radius: 28,
-            backgroundColor: Colors.white,
+            backgroundColor: categoryColor,
           ),
           const SizedBox(width: 16),
 
@@ -198,13 +200,19 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
                       ),
                     ),
                     const SizedBox(width: 15),
-                    Text(
-                      event.category,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.underline,
-                        color: Colors.black,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: categoryColor,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        event.category,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],

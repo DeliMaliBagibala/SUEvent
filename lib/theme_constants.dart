@@ -9,6 +9,18 @@ class AppColors {
   static const Color textBlack = Colors.white70;
   static const Color textWhite = Colors.black54;
   static const Color iconBlack = Colors.white70;
+
+  // Category Colors
+  static const Map<String, Color> categoryColors = {
+    "Food": Color(0xffb14d0f),
+    "Movies": Color(0xffb10f83),
+    "Clubs": Color(0xffb10f0f),
+    "Games": Color(0xff0fb12a),
+    "Hanging Out": Color(0xff0f12b1),
+    "Sports": Color(0xFF6d0fb1),
+    "Music": Color(0xff5e595b),
+    "Other": Color(0xffb1b10f),
+  };
 }
 
 class AppTextStyles {
