@@ -224,7 +224,7 @@ class _LoginPageState extends State<LoginPage> {
                 Align(
                   alignment: Alignment.topLeft,
                   child: IconButton(
-                    icon: Icon(Icons.arrow_left, size: 40, color: Colors.black),
+                    icon: Icon(Icons.arrow_left, size: 40, color: AppColors.textBlack),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -245,7 +245,7 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(height: 10),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: Text("Forgot Password?", style: TextStyle(color: Colors.white70)),
+                  child: Text("Forgot Password?", style: TextStyle(color: Colors.teal)),
                 ),
                 SizedBox(height: 40),
                 SizedBox(
@@ -262,7 +262,7 @@ class _LoginPageState extends State<LoginPage> {
                         ? CircularProgressIndicator(color: Colors.white)
                         : Text(
                       "Login",
-                      style: TextStyle(color: Colors.white, fontSize: 18),
+                      style: TextStyle(color: AppColors.textBlack, fontSize: 18),
                     ),
                   ),
                 ),
@@ -376,7 +376,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Align(
                     alignment: Alignment.topLeft,
                     child: IconButton(
-                      icon: Icon(Icons.arrow_left, size: 40, color: Colors.black),
+                      icon: Icon(Icons.arrow_left, size: 40, color: AppColors.textBlack),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
@@ -387,7 +387,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: AppColors.textBlack,
                     ),
                   ),
                   SizedBox(height: 40),
