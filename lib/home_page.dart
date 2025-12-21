@@ -97,6 +97,55 @@ class _HomePageState extends State<HomePage> {
   Widget _buildHomeContent() {
     return Consumer<EventProvider>(
       builder: (context, eventProvider, child) {
+        // Filter events for the next 7 days
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+        final weekLater = today.add(const Duration(days: 7));
+
+        final upcomingEvents = eventProvider.events.where((event) {
+          try {
+            final dateParts = event.date.split('/');
+            final eventDate = DateTime(int.parse(dateParts[2]), int.parse(dateParts[1]), int.parse(dateParts[0]));
+            return eventDate.isAfter(today.subtract(const Duration(days: 1))) && eventDate.isBefore(weekLater);
+          } catch (e) {
+            return false;
+          }
+        }).toList();
+
+        // Sort events by date and time
+        upcomingEvents.sort((a, b) {
+          try {
+            final aDateParts = a.date.split('/');
+            final bDateParts = b.date.split('/');
+            final aDateTime = DateTime(int.parse(aDateParts[2]), int.parse(aDateParts[1]), int.parse(aDateParts[0]));
+            final bDateTime = DateTime(int.parse(bDateParts[2]), int.parse(bDateParts[1]), int.parse(bDateParts[0]));
+
+            int dateComparison = aDateTime.compareTo(bDateTime);
+            if (dateComparison != 0) return dateComparison;
+
+            final aTimeParts = a.time.split(':');
+            final bTimeParts = b.time.split(':');
+            final aTime = TimeOfDay(hour: int.parse(aTimeParts[0]), minute: int.parse(aTimeParts[1]));
+            final bTime = TimeOfDay(hour: int.parse(bTimeParts[0]), minute: int.parse(bTimeParts[1]));
+            final aTimeInMinutes = aTime.hour * 60 + aTime.minute;
+            final bTimeInMinutes = bTime.hour * 60 + bTime.minute;
+            return aTimeInMinutes.compareTo(bTimeInMinutes);
+          } catch (e) {
+            return 0;
+          }
+        });
+
+        // Group events by date
+        final Map<String, List<Event>> groupedEvents = {};
+        for (final event in upcomingEvents) {
+          if (groupedEvents.containsKey(event.date)) {
+            groupedEvents[event.date]!.add(event);
+          } else {
+            groupedEvents[event.date] = [event];
+          }
+        }
+        final uniqueDates = groupedEvents.keys.toList();
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -130,15 +179,34 @@ class _HomePageState extends State<HomePage> {
                 color: AppColors.backgroundDark,
                 child: eventProvider.isLoading
                     ? const Center(child: CircularProgressIndicator())
-                    : eventProvider.events.isEmpty
-                        ? const Center(child: Text("No events found."))
+                    : uniqueDates.isEmpty
+                        ? const Center(child: Text("No events in the next 7 days."))
                         : ListView.builder(
                             padding: const EdgeInsets.all(AppDimens.pagePadding),
-                            itemCount: eventProvider.events.length,
+                            itemCount: uniqueDates.length,
                             itemBuilder: (context, index) {
-                              final event = eventProvider.events[index];
-                              return EventCard(
-                                event: event,
+                              final date = uniqueDates[index];
+                              final eventsForDate = groupedEvents[date]!;
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(AppDimens.smallRadius),
+                                        border: Border.all(color: AppColors.textBlack.withOpacity(0.3)),
+                                      ),
+                                      child: Text(
+                                        date,
+                                        style: AppTextStyles.dateHeader,
+                                      ),
+                                    ),
+                                  ),
+                                  ...eventsForDate.map((event) => EventCard(event: event)).toList(),
+                                ],
                               );
                             },
                           ),
@@ -574,8 +642,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     maxLines: null,
                     style: const TextStyle(color: AppColors.textBlack),
                     decoration: const InputDecoration(
-                      hintText: "Add description",
-                      hintStyle: TextStyle(color: Colors.black26),
+                      hintText: "Add description...",
+                      hintStyle: TextStyle(color: AppColors.textBlack),
                       border: InputBorder.none,
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
