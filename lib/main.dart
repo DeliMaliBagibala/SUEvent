@@ -26,3 +26,26 @@ void main() async {
     ),
   );
 }
+
+class EventApp extends StatelessWidget {
+  const EventApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Event App UI',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: AppColors.backgroundDark,
+        useMaterial3: true,
+      ),
+      home: const StartingPage(),
+      routes: {
+        '/login': (context) => const LoginPage(),
+        '/register': (context) => const RegisterPage(),
+        '/home': (context) => const HomePage(),
+      },
+    );
+  }
+}

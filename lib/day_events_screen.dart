@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'event_detail.dart';
 import 'theme_constants.dart';
 import 'home_page.dart';
-import 'models/event_model.dart'; // Import the Event model
+import 'models/event_model.dart'; // Ensure this import is present
 
 class DayEventsScreen extends StatefulWidget {
   final String dateString;
@@ -16,7 +16,7 @@ class DayEventsScreen extends StatefulWidget {
 class _DayEventsScreenState extends State<DayEventsScreen> {
   String _selectedCategory = 'All';
 
-  // Dummy data for this specific day using the correct Event model
+  // Dummy data for this specific day
   final List<Event> _allEvents = [
     Event(
       id: "sample_1",
