@@ -1,11 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'models/event_model.dart';
+import 'providers/event_provider.dart';
 import 'theme_constants.dart';
 import 'day_events_screen.dart';
 
-class CalendarScreen extends StatelessWidget {
+class CalendarScreen extends StatefulWidget {
   final VoidCallback onBackTap;
 
   const CalendarScreen({super.key, required this.onBackTap});
+
+  @override
+  State<CalendarScreen> createState() => _CalendarScreenState();
+}
+
+class _CalendarScreenState extends State<CalendarScreen> {
+  late DateTime _currentDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentDate = DateTime.now();
+  }
+
+  void _nextMonth() {
+    setState(() {
+      _currentDate = DateTime(_currentDate.year, _currentDate.month + 1, 1);
+    });
+  }
+
+  void _previousMonth() {
+    setState(() {
+      _currentDate = DateTime(_currentDate.year, _currentDate.month - 1, 1);
+    });
+  }
+
+  String _getMonthName(int month) {
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return monthNames[month - 1];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,37 +55,34 @@ class CalendarScreen extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.arrow_left,
                     size: AppDimens.iconLarge, color: AppColors.textBlack),
-                onPressed: onBackTap,
+                onPressed: widget.onBackTap,
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_left,
+                    size: AppDimens.iconLarge, color: AppColors.textBlack),
+                onPressed: _previousMonth,
               ),
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 20.0),
+                child: Center(
                   child: Text(
-                    "November",
-                    style: AppTextStyles.headerLarge.copyWith(fontSize: 32),
+                    "${_getMonthName(_currentDate.month)} ${_currentDate.year}",
+                    style: AppTextStyles.headerLarge.copyWith(fontSize: 28),
                   ),
                 ),
               ),
-              TextButton(
-                onPressed: () {
-                  // This will be made later, I hope
-                },
-                child: Text(
-                  "Next Month",
-                  style: AppTextStyles.bodyBold.copyWith(
-                    color: AppColors.textBlack.withOpacity(0.7),
-                  ),
-                ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right,
+                    size: AppDimens.iconLarge, color: AppColors.textBlack),
+                onPressed: _nextMonth,
               ),
               const SizedBox(width: 15),
             ],
           ),
         ),
-
         Expanded(
           child: Container(
             color: AppColors.textWhite,
-            child: CalendarGrid(),
+            child: CalendarGrid(currentDate: _currentDate),
           ),
         ),
       ],
@@ -58,28 +91,73 @@ class CalendarScreen extends StatelessWidget {
 }
 
 class CalendarGrid extends StatelessWidget {
-  CalendarGrid({super.key});
+  final DateTime currentDate;
+
+  CalendarGrid({super.key, required this.currentDate});
 
   final List<String> _weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  final List<int> _daysInMonth = const [
-    -1, -1, -1, 1, 2, 3, 4,
-    5, 6, 7, 8, 9, 10, 11,
-    12, 13, 14, 15, 16, 17, 18,
-    19, 20, 21, 22, 23, 24, 25,
-    26, 27, 28, 29, 30, -2, -2,
-  ];
+  List<int> _generateDays(DateTime date) {
+    final year = date.year;
+    final month = date.month;
+    final firstDayOfMonth = DateTime(year, month, 1);
+    final daysInMonth = DateTime(year, month + 1, 0).day;
 
-  final Map<int, int> _eventsPerDay = {
-    26: 4, 27: 4, 28: 4, 29: 4, 30: 4, 1: 4, 2: 4,
-    3: 4, 4: 4, 5: 4, 6: 4, 7: 4, 8: 4, 9: 4,
-    10: 4, 11: 4, 12: 4, 13: 4, 14: 4, 15: 4, 16: 4,
-    17: 4, 18: 4, 19: 4, 20: 4, 21: 4, 22: 4, 23: 4,
-    24: 4, 25: 4, 30: 4,
-  };
+    int blankDays = firstDayOfMonth.weekday % 7;
+
+    final days = <int>[];
+    for (int i = 0; i < blankDays; i++) {
+      days.add(-1);
+    }
+    for (int i = 1; i <= daysInMonth; i++) {
+      days.add(i);
+    }
+
+    while (days.length % 7 != 0) {
+      days.add(-1);
+    }
+
+    return days;
+  }
+
+  String _getMonthName(int month) {
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return monthNames[month - 1];
+  }
+
+  Map<int, int> _getEventsForMonth(List<Event> events, DateTime date) {
+    final Map<int, int> eventsPerDay = {};
+    final month = date.month;
+    final year = date.year;
+
+    for (final event in events) {
+      try {
+        final parts = event.date.split('/');
+        if (parts.length == 3) {
+          final day = int.parse(parts[0]);
+          final eventMonth = int.parse(parts[1]);
+          final eventYear = int.parse(parts[2]);
+
+          if (eventYear == year && eventMonth == month) {
+            eventsPerDay.update(day, (value) => value + 1, ifAbsent: () => 1);
+          }
+        }
+      } catch (e) {
+        print("Error parsing date for event ${event.id}: ${event.date}");
+      }
+    }
+    return eventsPerDay;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final daysInMonth = _generateDays(currentDate);
+    final eventProvider = Provider.of<EventProvider>(context);
+    final eventsPerDay = _getEventsForMonth(eventProvider.events, currentDate);
+
     return Column(
       children: [
         Padding(
@@ -94,7 +172,6 @@ class CalendarGrid extends StatelessWidget {
             ))).toList(),
           ),
         ),
-
         Expanded(
           child: GridView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 5.0),
@@ -105,10 +182,10 @@ class CalendarGrid extends StatelessWidget {
               mainAxisSpacing: 1.0,
               childAspectRatio: 0.8,
             ),
-            itemCount: _daysInMonth.length,
+            itemCount: daysInMonth.length,
             itemBuilder: (context, index) {
-              final day = _daysInMonth[index];
-              return _buildDayCell(context, day);
+              final day = daysInMonth[index];
+              return _buildDayCell(context, day, eventsPerDay);
             },
           ),
         ),
@@ -116,11 +193,15 @@ class CalendarGrid extends StatelessWidget {
     );
   }
 
-  Widget _buildDayCell(BuildContext context, int day) {
+  Widget _buildDayCell(BuildContext context, int day, Map<int, int> eventsPerDay) {
     final isCurrentMonth = day > 0;
-    final eventCount = isCurrentMonth ? (_eventsPerDay[day] ?? 0) : 0;
-
+    final eventCount = isCurrentMonth ? (eventsPerDay[day] ?? 0) : 0;
     final textColor = isCurrentMonth ? AppColors.textBlack : Colors.black45;
+    
+    // Construct date string formatted as dd/MM/yyyy to match database format
+    final dateString = isCurrentMonth 
+        ? "${day.toString().padLeft(2, '0')}/${currentDate.month.toString().padLeft(2, '0')}/${currentDate.year}"
+        : "";
 
     return Container(
       decoration: BoxDecoration(
@@ -131,14 +212,13 @@ class CalendarGrid extends StatelessWidget {
         child: InkWell(
           onTap: isCurrentMonth
               ? () {
-            // Navigate to the Day Events Screen
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => DayEventsScreen(dateString: "$day, October"), // Passing dummy month for now
+                builder: (context) => DayEventsScreen(dateString: dateString),
               ),
             );
-            print("Tapped day $day");
+            print("Tapped day $day, date: $dateString");
           }
               : null,
           child: Padding(
@@ -163,7 +243,7 @@ class CalendarGrid extends StatelessWidget {
                           const Icon(Icons.circle, size: 5, color: AppColors.textBlack),
                           const SizedBox(height: 4),
                           Text(
-                            "$eventCount Events",
+                            "$eventCount Event${eventCount > 1 ? 's' : ''}",
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 10,

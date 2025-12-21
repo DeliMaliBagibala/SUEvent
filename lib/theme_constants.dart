@@ -1,22 +1,34 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color backgroundDark = Color(0xFF6B6B6B);
-  static const Color backgroundHeader = Color(0xFF808080);
-  static const Color cardBackground = Color(0xFF9E9E9E);
-  static const Color accentLight = Color(0xFFD9D9D9);
+  static const Color backgroundDark = Color(0xFF68717D);
+  static const Color backgroundHeader = Color(0xFF223B61);
+  static const Color cardBackground = Color(0xFF355C97);
+  static const Color accentLight = Color(0xFF1B2E4B);
 
-  static const Color textBlack = Colors.black;
-  static const Color textWhite = Colors.white;
-  static const Color iconBlack = Colors.black87;
+  static const Color textBlack = Colors.white70;
+  static const Color textWhite = Colors.black54;
+  static const Color iconBlack = Colors.white70;
+
+  // Category Colors
+  static const Map<String, Color> categoryColors = {
+    "Food": Color(0xffb14d0f),
+    "Movies": Color(0xffb10f83),
+    "Clubs": Color(0xffb10f0f),
+    "Games": Color(0xff0fb12a),
+    "Hanging Out": Color(0xff0f12b1),
+    "Sports": Color(0xFF6d0fb1),
+    "Music": Color(0xff5e595b),
+    "Other": Color(0xffb1b10f),
+  };
 }
 
 class AppTextStyles {
   static TextStyle get headerLarge => TextStyle(
-    color: AppColors.textBlack.withOpacity(0.8),
-    fontSize: 28,
-    fontWeight: FontWeight.bold,
-  );
+        color: AppColors.textBlack.withOpacity(0.8),
+        fontSize: 28,
+        fontWeight: FontWeight.bold,
+      );
 
   static const TextStyle headerMedium = TextStyle(
     color: AppColors.textBlack,

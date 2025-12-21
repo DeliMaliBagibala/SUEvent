@@ -1,13 +1,16 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'theme_constants.dart';
 import 'home_page.dart';
+import 'providers/auth_provider.dart';
 
-void AlertDialogShower(context) {// Single AlertDialog function to call wherever needed
+void AlertDialogShower(context, String title, String message) {
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text("Your information is invalid!"),
-      content: Text("Please check your inputs in the form."),
+      title: Text(title),
+      content: Text(message),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
@@ -18,7 +21,7 @@ void AlertDialogShower(context) {// Single AlertDialog function to call wherever
   );
 }
 
-String? LoginRegisterValidation(value, hint, isPassword){// this is the common email and password validation method.
+String? LoginRegisterValidation(value, hint, isPassword){
   if (value == null || value.isEmpty) {
     return "Required";
   }
@@ -30,9 +33,6 @@ String? LoginRegisterValidation(value, hint, isPassword){// this is the common e
   } else if (isPassword) {
     if (value.length < 6) {
       return "Password too short (at least 6 characters)";
-    }
-    if (value.length >= 24) {
-      return "Password too long (at most 24 characters)";
     }
   }
   return null;
@@ -67,6 +67,13 @@ class StartingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if user is already logged in
+    final authProvider = Provider.of<AppAuthProvider>(context);
+    if (authProvider.isLoggedIn) {
+      // Use Future.microtask to navigate after the build frame is done
+      Future.microtask(() => Navigator.pushReplacementNamed(context, '/home'));
+    }
+
     return Scaffold(
       backgroundColor: AppColors.backgroundHeader,
       body: Center(
@@ -136,23 +143,6 @@ class StartingPage extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 40),
-              TextButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomePage()),
-                  );
-                },
-                child: Text(
-                  "Continue as guest",
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -180,24 +170,47 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _trySubmit() {
-    // This triggers all validators. If any return a string, isValid is false.
+  Future<void> _trySubmit() async {
     final isValid = _formKey.currentState?.validate() ?? false;
 
-    if (isValid) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-            (route) => false,
-      );
+    if (!isValid) {
+      AlertDialogShower(context, "Invalid Input", "Please check your inputs.");
+      return;
+    }
+
+    final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+    String? error = await authProvider.login(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+    );
+
+    if (error == null) {
+      if (mounted) {
+         Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+              (route) => false,
+        );
+      }
     } else {
-      // Show Alert Dialog if validation fails
-      AlertDialogShower(context); // Please see line 5
+       if (mounted) {
+        String message = "Login Failed";
+        if (error.contains('user-not-found')) {
+          message = 'No user found for that email.';
+        } else if (error.contains('wrong-password')) {
+          message = 'Wrong password provided for that user.';
+        } else if (error.contains('invalid-credential')) {
+          message = 'Invalid email or password.';
+        }
+        AlertDialogShower(context, "Login Failed", message);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = Provider.of<AppAuthProvider>(context).isLoading;
+
     return Scaffold(
       backgroundColor: AppColors.backgroundHeader,
       body: SafeArea(
@@ -211,7 +224,7 @@ class _LoginPageState extends State<LoginPage> {
                 Align(
                   alignment: Alignment.topLeft,
                   child: IconButton(
-                    icon: Icon(Icons.arrow_left, size: 40, color: Colors.black),
+                    icon: Icon(Icons.arrow_left, size: 40, color: AppColors.textBlack),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -222,7 +235,7 @@ class _LoginPageState extends State<LoginPage> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: AppColors.textBlack,
                   ),
                 ),
                 SizedBox(height: 50),
@@ -232,22 +245,24 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(height: 10),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: Text("Forgot Password?", style: TextStyle(color: Colors.white70)),
+                  child: Text("Forgot Password?", style: TextStyle(color: Colors.teal)),
                 ),
                 SizedBox(height: 40),
                 SizedBox(
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _trySubmit,
+                    onPressed: isLoading ? null : _trySubmit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black54,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: Text(
+                    child: isLoading
+                        ? CircularProgressIndicator(color: Colors.white)
+                        : Text(
                       "Login",
-                      style: TextStyle(color: Colors.white, fontSize: 18),
+                      style: TextStyle(color: AppColors.textBlack, fontSize: 18),
                     ),
                   ),
                 ),
@@ -302,22 +317,51 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  void _trySubmit() {
+  Future<void> _trySubmit() async {
     final isValid = _formKey.currentState?.validate() ?? false;
 
-    if (isValid) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-            (route) => false,
-      );
+    if (!isValid) {
+      AlertDialogShower(context, "Invalid Input", "Please check your inputs.");
+      return;
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+       AlertDialogShower(context, "Password Mismatch", "Passwords do not match!");
+       return;
+    }
+
+    final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+    String? error = await authProvider.register(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+      _usernameController.text.trim(),
+    );
+
+    if (error == null) {
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+              (route) => false,
+        );
+      }
     } else {
-      AlertDialogShower(context);// PLease see line 5.
+      if (mounted) {
+        String message = "Registration failed.";
+        if (error.contains('weak-password')) {
+          message = 'The password provided is too weak.';
+        } else if (error.contains('email-already-in-use')) {
+          message = 'The account already exists for that email.';
+        }
+        AlertDialogShower(context, "Registration Error", message);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = Provider.of<AppAuthProvider>(context).isLoading;
+
     return Scaffold(
       backgroundColor: AppColors.backgroundHeader,
       body: SafeArea(
@@ -332,7 +376,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Align(
                     alignment: Alignment.topLeft,
                     child: IconButton(
-                      icon: Icon(Icons.arrow_left, size: 40, color: Colors.black),
+                      icon: Icon(Icons.arrow_left, size: 40, color: AppColors.textBlack),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
@@ -343,7 +387,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: AppColors.textBlack,
                     ),
                   ),
                   SizedBox(height: 40),
@@ -358,14 +402,16 @@ class _RegisterPageState extends State<RegisterPage> {
                   SizedBox(
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: _trySubmit,
+                      onPressed: isLoading ? null : _trySubmit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black54,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Text(
+                      child: isLoading 
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Text(
                         "Register",
                         style: TextStyle(color: Colors.white, fontSize: 18),
                       ),

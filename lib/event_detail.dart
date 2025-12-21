@@ -3,6 +3,7 @@ import 'profile_page.dart';
 import 'calendar_screen.dart';
 import 'theme_constants.dart';
 import 'home_page.dart';
+import 'models/event_model.dart';
 
 class EventDetailScreen extends StatefulWidget {
   final Event event;
@@ -419,7 +420,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       SizedBox(
                         height: 200,
                         child: Container(
-                          color: Colors.red.withOpacity(0.3), // Debug border
+                          color: AppColors.textBlack.withOpacity(0.3), // Debug border
                           child: Stack(
                             children: [
                               // PageView with expanded touch area
