@@ -407,6 +407,33 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     );
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) {
+      setState(() {
+        _dateController.text = "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
+      });
+    }
+  }
+
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        final String formattedTime = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+        _timeController.text = formattedTime;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final eventProvider = Provider.of<EventProvider>(context);
@@ -456,9 +483,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-                _buildEditableRow("Date:", _dateController, () => _editField("Date", _dateController)),
+                _buildEditableRow("Date:", _dateController, () => _selectDate(context)),
                 const SizedBox(height: 15),
-                _buildEditableRow("Time:", _timeController, () => _editField("Time", _timeController)),
+                _buildEditableRow("Time:", _timeController, () => _selectTime(context)),
                 const SizedBox(height: 15),
                 _buildEditableRow("Location:", _locationController, () => _editField("Location", _locationController)),
                 const SizedBox(height: 15),
@@ -538,6 +565,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   Widget _buildEditableRow(String label, TextEditingController controller, VoidCallback onEdit) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(
           width: 100,
@@ -555,7 +583,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             decoration: InputDecoration(
               border: InputBorder.none,
               isDense: true,
-              contentPadding: EdgeInsets.zero,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
               suffixIcon: IconButton(
                 icon: const Icon(Icons.edit_outlined, color: AppColors.textBlack, size: AppDimens.iconSmall),
                 onPressed: onEdit,
