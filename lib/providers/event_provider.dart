@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/event_model.dart';
+import '../models/comment_model.dart';
 import 'auth_provider.dart';
 
 class EventProvider extends ChangeNotifier {
@@ -21,7 +22,6 @@ class EventProvider extends ChangeNotifier {
     }
   }
 
-  // Real-time updates using Stream
   void _subscribeToEvents() {
     _setLoading(true);
     _firestore
@@ -44,7 +44,7 @@ class EventProvider extends ChangeNotifier {
     try {
       await _firestore.collection('events').add({
         ...event.toMap(),
-        'createdBy': _authProvider.user!.uid, // Ensure createdBy is set
+        'createdBy': _authProvider.user!.uid,
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
@@ -55,7 +55,6 @@ class EventProvider extends ChangeNotifier {
 
   Future<void> updateEvent(Event event) async {
     if (!_authProvider.isLoggedIn) return;
-    // Check if user is the creator (optional strict rule, though Firestore rules handle security)
     if (event.createdBy != _authProvider.user!.uid) {
         _error = "You can only edit your own events.";
         notifyListeners();
@@ -86,14 +85,52 @@ class EventProvider extends ChangeNotifier {
     }
   }
 
+  Stream<List<Comment>> getCommentsStream(String eventId) {
+    return _firestore
+        .collection('events')
+        .doc(eventId)
+        .collection('comments')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) =>
+        snapshot.docs.map((doc) => Comment.fromFirestore(doc)).toList());
+  }
+
+  Future<void> addComment(String eventId, String text) async {
+    if (!_authProvider.isLoggedIn || _authProvider.user == null) return;
+
+    try {
+      final username = _authProvider.userData?['username'] ?? 'User';
+
+      await _firestore
+          .collection('events')
+          .doc(eventId)
+          .collection('comments')
+          .add({
+        'text': text,
+        'userId': _authProvider.user!.uid,
+        'username': username,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+
+
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
   }
-  
-  // Method to clear error message
+
   void clearError() {
       _error = null;
       notifyListeners();
   }
 }
+
+

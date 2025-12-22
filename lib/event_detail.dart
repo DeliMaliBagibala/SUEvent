@@ -4,6 +4,11 @@ import 'calendar_screen.dart';
 import 'theme_constants.dart';
 import 'home_page.dart';
 import 'models/event_model.dart';
+import 'package:provider/provider.dart';
+import 'providers/event_provider.dart';
+import 'models/comment_model.dart';
+import 'providers/auth_provider.dart';
+
 
 class EventDetailScreen extends StatefulWidget {
   final Event event;
@@ -43,20 +48,6 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
 
 
 
-  final List<Map<String, String>> _comments = [
-    {'comment': 'WOW im definitely coming!!!',
-      'username': 'student1',    },
-    {'comment': 'i have a lab tomorrow :(',
-     'username': 'baris_manco',},
-    {'comment': 'dummy comment',
-    'username': 'dummy_user',
-    },
-
-    {'comment': 'ilk yorum',
-    'username': 'funny_student',
-    },
-  ];
-
   // Dummy images for now
   final List<String> _eventImages = [
     'assets/images/event_image1.jpg',
@@ -72,16 +63,16 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
 
 
   void _handleCommentTap() {
-    if (!widget.isLoggedIn) {
+    final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
 
+    if (!authProvider.isLoggedIn) {
+      // need to be logged in to comment
       Navigator.pushNamed(context, '/login').then((_) {
-       //login code needed
+        setState(() {});
       });
     } else {
-      // Show comment input dialog
       _showCommentDialog();
     }
-    print("Comment button pressed");
   }
 
   void _showCommentDialog() {
@@ -120,22 +111,34 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                 "Post",
                 style: AppTextStyles.bodyBold,
               ),
-              onPressed: () {
-                if (_commentController.text.trim().isNotEmpty) {
-                  setState(() {
-                    _comments.insert(0, {
-                      'username': _commentController.text.trim(),
-                    });
-                  });
-                  _commentController.clear();
-                  Navigator.pop(context);
+              onPressed: () async {
+                final text = _commentController.text.trim();
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Comment posted!"),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
+                if (text.isNotEmpty) {
+                  Navigator.pop(context);
+                  try {
+                    final eventProvider =
+                    Provider.of<EventProvider>(context, listen: false);
+
+                    await eventProvider.addComment(widget.event.id, text);
+
+                    _commentController.clear();
+
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Comment posted!"),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Failed to post: $e")),
+                      );
+                    }
+                  }
                 }
               },
             ),
@@ -219,7 +222,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     );
   }
 
-  Widget _buildCommentItem(String comment) {
+  Widget _buildCommentItem(Comment comment) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -228,25 +231,39 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
             radius: 20,
             backgroundColor: Colors.white,
-            child: const Icon(
-              Icons.person,
-              color: Colors.black54,
-              size: 24,
+            child: Text(
+              comment.username.isNotEmpty ? comment.username[0].toUpperCase() : "?",
+              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              comment,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black,
-                fontWeight: FontWeight.w500,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  comment.username,
+                  style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.black54,
+                      fontWeight: FontWeight.bold
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  comment.text,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -555,14 +572,42 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: Colors.white, // Adjusted to match your theme
                         ),
                       ),
                       const SizedBox(height: 12),
 
-                      // Comment list
-                      ..._comments.map((comment) => _buildCommentItem(comment['comment']!,)),
+                      StreamBuilder<List<Comment>>(
+                        stream: Provider.of<EventProvider>(context, listen: false)
+                            .getCommentsStream(widget.event.id),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+                          if (snapshot.hasError) {
+                            return Text("Error: ${snapshot.error}", style: const TextStyle(color: Colors.white));
+                          }
 
+                          final comments = snapshot.data ?? [];
+
+                          if (comments.isEmpty) {
+                            return const Text(
+                              "No comments yet. Be the first!",
+                              style: TextStyle(color: Colors.white70, fontStyle: FontStyle.italic),
+                            );
+                          }
+
+                          return ListView.builder(
+                            shrinkWrap: true, // Important for nesting in SingleChildScrollView
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: comments.length,
+                            itemBuilder: (context, index) {
+                              final comment = comments[index];
+                              return _buildCommentItem(comment);
+                            },
+                          );
+                        },
+                      ),
                       const SizedBox(height: 24),
                     ],
                   ),
