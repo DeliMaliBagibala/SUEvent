@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'theme_constants.dart';
-import 'home_page.dart'; // Imports EventCard
+import 'home_page.dart';
 import 'providers/auth_provider.dart';
 import 'providers/event_provider.dart';
 import 'models/event_model.dart';
-import 'starting_page.dart'; // Import for LoginPage
+import 'starting_page.dart';
 
-// Result object used when coming back from the edit page.
 const String defaultPic =
     "https://i.scdn.co/image/ab67616d0000b273c22cf856c0ad35b5767edfb6";
 
@@ -25,7 +24,6 @@ class ProfileEditResult {
   });
 }
 
-// Main profile page
 class ProfilePage extends StatefulWidget {
   final VoidCallback onBackTap;
 
@@ -40,7 +38,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   
-  bool _showCreated = true; // 'Created' events vs 'Saved/Attended'
+  bool _showCreated = true;
 
   ImageProvider _picSrc(String val) {
     if (val.startsWith("data:image")) {
@@ -84,7 +82,6 @@ class _ProfilePageState extends State<ProfilePage> {
     final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
     await authProvider.logout();
     if (mounted) {
-      // Navigate to the StartingPage and remove all previous routes
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const StartingPage()),
         (Route<dynamic> route) => false,
@@ -124,7 +121,7 @@ class _ProfilePageState extends State<ProfilePage> {
         final currentUserId = authProvider.user?.uid;
 
         final createdEvents = eventProvider.events.where((e) => e.createdBy == currentUserId).toList();
-        final attendedEvents = <Event>[]; // Placeholder for saved events
+        final attendedEvents = <Event>[];
 
         final visibleEvents = _showCreated ? createdEvents : attendedEvents;
 
@@ -256,7 +253,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 }
 
-// Small tab button widget
 class _ProfileTabButton extends StatelessWidget {
   final String text;
   final bool isSelected;
@@ -285,7 +281,6 @@ class _ProfileTabButton extends StatelessWidget {
   }
 }
 
-// Edit profile page
 class EditProfilePage extends StatefulWidget {
   final String initialName;
   final String initialBio;
