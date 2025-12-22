@@ -9,8 +9,7 @@ import 'providers/event_provider.dart';
 import 'models/event_model.dart';
 import 'starting_page.dart';
 
-const String defaultPic =
-    "https://i.scdn.co/image/ab67616d0000b273c22cf856c0ad35b5767edfb6";
+const String defaultPic = "assets/images/generic_user_photo.png";
 
 class ProfileEditResult {
   final String name;
@@ -44,6 +43,9 @@ class _ProfilePageState extends State<ProfilePage> {
     if (val.startsWith("data:image")) {
       final data = val.split(",").last;
       return MemoryImage(base64Decode(data));
+    }
+    if (val.startsWith("assets/")) {
+      return AssetImage(val);
     }
     return NetworkImage(val);
   }
@@ -316,6 +318,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
     if (val.startsWith("data:image")) {
       final data = val.split(",").last;
       return MemoryImage(base64Decode(data));
+    }
+    if (val.startsWith("assets/")) {
+      return AssetImage(val);
     }
     return NetworkImage(val);
   }

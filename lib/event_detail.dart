@@ -227,6 +227,20 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   }
 
   Widget _buildCommentItem(Comment comment) {
+    ImageProvider pic;
+    final val = comment.photoUrl;
+    if (val.isNotEmpty) {
+      if (val.startsWith("data:image")) {
+        final data = val.split(",").last;
+        pic = MemoryImage(base64Decode(data));
+      } else if (val.startsWith("assets/")) {
+        pic = AssetImage(val);
+      } else {
+        pic = NetworkImage(val);
+      }
+    } else {
+      pic = const AssetImage("assets/images/generic_user_photo.png");
+    }
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -240,10 +254,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           CircleAvatar(
             radius: 20,
             backgroundColor: Colors.white,
-            child: Text(
-              comment.username.isNotEmpty ? comment.username[0].toUpperCase() : "?",
-              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-            ),
+            backgroundImage: pic,
           ),
           const SizedBox(width: 12),
           Expanded(
