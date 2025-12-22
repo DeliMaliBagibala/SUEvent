@@ -88,7 +88,18 @@ class StartingPage extends StatelessWidget {
                   fit: BoxFit.contain,
                 ),
               ),
-              SizedBox(height: 100),
+              SizedBox(height: 40),
+              Text(
+                "SUEvent",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  
+                ),
+              ),
+              SizedBox(height: 50),
               SizedBox(
                 width: double.infinity,
                 height: 50,
