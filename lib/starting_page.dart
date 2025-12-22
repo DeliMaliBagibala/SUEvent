@@ -41,7 +41,7 @@ String? LoginRegisterValidation(value, hint, isPassword){
 Widget _buildTextField(String hint, TextEditingController controller, {bool isPassword = false}) {
   return Container(
     decoration: BoxDecoration(
-      color: Color(0xFFF3E5F5),
+      color: Colors.white,
       borderRadius: BorderRadius.circular(12),
     ),
     child: TextFormField(
@@ -73,7 +73,7 @@ class StartingPage extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundHeader,
+      backgroundColor: AppColors.backgroundDark,
       body: Center(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 40.0),
@@ -214,7 +214,7 @@ class _LoginPageState extends State<LoginPage> {
     final isLoading = Provider.of<AppAuthProvider>(context).isLoading;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundHeader,
+      backgroundColor: AppColors.backgroundDark,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(30.0),
@@ -360,7 +360,7 @@ class _RegisterPageState extends State<RegisterPage> {
     final isLoading = Provider.of<AppAuthProvider>(context).isLoading;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundHeader,
+      backgroundColor: AppColors.backgroundDark,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(30.0),
