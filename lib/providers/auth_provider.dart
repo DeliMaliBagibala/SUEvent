@@ -67,7 +67,7 @@ class AppAuthProvider extends ChangeNotifier {
         'username': username,
         'email': email,
         'bio': '',
-        'profile_picture': 'https://i.scdn.co/image/ab67616d0000b273c22cf856c0ad35b5767edfb6',
+        'profile_picture': '',
         'createdAt': FieldValue.serverTimestamp(),
       });
       

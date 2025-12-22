@@ -101,6 +101,7 @@ class EventProvider extends ChangeNotifier {
 
     try {
       final username = _authProvider.userData?['username'] ?? 'User';
+      final photoUrl = _authProvider.userData?['profile_picture'] ?? '';
 
       await _firestore
           .collection('events')
@@ -110,6 +111,7 @@ class EventProvider extends ChangeNotifier {
         'text': text,
         'userId': _authProvider.user!.uid,
         'username': username,
+        'photoUrl': photoUrl,
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {

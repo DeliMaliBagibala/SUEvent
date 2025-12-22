@@ -173,7 +173,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundHeader,
+      backgroundColor: AppColors.backgroundDark,
       body: SafeArea(
         child: bodyContent,
       ),
@@ -227,6 +227,20 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   }
 
   Widget _buildCommentItem(Comment comment) {
+    ImageProvider pic;
+    final val = comment.photoUrl;
+    if (val.isNotEmpty) {
+      if (val.startsWith("data:image")) {
+        final data = val.split(",").last;
+        pic = MemoryImage(base64Decode(data));
+      } else if (val.startsWith("assets/")) {
+        pic = AssetImage(val);
+      } else {
+        pic = NetworkImage(val);
+      }
+    } else {
+      pic = const AssetImage("assets/images/generic_user_photo.png");
+    }
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -240,10 +254,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           CircleAvatar(
             radius: 20,
             backgroundColor: Colors.white,
-            child: Text(
-              comment.username.isNotEmpty ? comment.username[0].toUpperCase() : "?",
-              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-            ),
+            backgroundImage: pic,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -254,7 +265,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   comment.username,
                   style: const TextStyle(
                       fontSize: 12,
-                      color: Colors.black54,
+                      color: AppColors.textBlack,
                       fontWeight: FontWeight.bold
                   ),
                 ),
@@ -263,7 +274,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   comment.text,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Colors.black,
+                    color: AppColors.textBlack,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -320,7 +331,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
             child: Icon(
               Icons.broken_image,
               size: 60,
-              color: Colors.black38,
+              color: AppColors.iconBlack,
             ),
           ),
         );
@@ -351,7 +362,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           child: Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_left, size: 40, color: Colors.black),
+                icon: const Icon(Icons.arrow_left, size: 40, color: AppColors.iconBlack),
                 onPressed: () => Navigator.pop(context),
               ),
               Expanded(
@@ -360,7 +371,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: AppColors.textBlack,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -398,7 +409,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black,
+                                color: AppColors.textBlack,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -409,7 +420,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.normal,
-                                color: Colors.black,
+                                color: AppColors.textBlack,
                               ),
                             ),
                             const SizedBox(height: 12),
@@ -425,7 +436,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                         : widget.event.description,
                                     style: const TextStyle(
                                       fontSize: 14,
-                                      color: Colors.black87,
+                                      color: AppColors.textBlack,
                                     ),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
@@ -459,7 +470,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                         : widget.event.description,
                                     style: const TextStyle(
                                       fontSize: 14,
-                                      color: Colors.black87,
+                                      color: AppColors.textBlack,
                                       height: 1.5,
                                     ),
                                   ),

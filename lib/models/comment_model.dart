@@ -4,6 +4,7 @@ class Comment {
   final String text;
   final String userId;
   final String username;
+  final String photoUrl;
   final DateTime createdAt;
 
   Comment({
@@ -11,6 +12,7 @@ class Comment {
     required this.text,
     required this.userId,
     required this.username,
+    required this.photoUrl,
     required this.createdAt,
   });
 
@@ -21,6 +23,7 @@ class Comment {
       text: data['text'] ?? '',
       userId: data['userId'] ?? '',
       username: data['username'] ?? 'USERNAME_MISSING',
+      photoUrl: data['photoUrl'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -30,6 +33,7 @@ class Comment {
       'text': text,
       'userId': userId,
       'username': username,
+      'photoUrl': photoUrl,
       'createdAt': FieldValue.serverTimestamp(),
     };
   }
