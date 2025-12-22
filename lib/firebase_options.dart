@@ -1,4 +1,3 @@
-// lib/firebase_options.dart
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
@@ -10,13 +9,6 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.windows:
-        // Firebase Auth on Windows is not fully supported in the core plugin set.
-        // It requires additional setup or using the REST API.
-        // For now, we return the web configuration as a placeholder or you can configure
-        // specific Windows options if you are using a community plugin that supports it.
-        // However, official support is limited.
-        // Returning web config might work for some services but likely not Auth/Core natively without issues.
-        // Let's keep it defined but be aware it might not work out of the box for all features.
         return windows;
       case TargetPlatform.android:
         return android;
@@ -29,10 +21,6 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // -----------------------------------------------------------------------
-  // REPLACE THE VALUES BELOW WITH KEYS FROM FIREBASE CONSOLE -> WEB APP
-  // -----------------------------------------------------------------------
-
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: "PASTE_YOUR_API_KEY_HERE",
     appId: "PASTE_YOUR_APP_ID_HERE",
@@ -41,7 +29,6 @@ class DefaultFirebaseOptions {
     storageBucket: "suevent-3614b.firebasestorage.app",
   );
 
-  // Use the same values for Windows as Web
   static const FirebaseOptions windows = FirebaseOptions(
     apiKey: "PASTE_YOUR_API_KEY_HERE",
     appId: "PASTE_YOUR_APP_ID_HERE",
