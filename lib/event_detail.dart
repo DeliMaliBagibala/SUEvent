@@ -277,6 +277,12 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
         fit: BoxFit.cover,
       );
     }
+    if (url.startsWith("assets/")) {
+      return Image.asset(
+        url,
+        fit: BoxFit.cover,
+      );
+    }
     return Image.network(
       url,
       fit: BoxFit.cover,

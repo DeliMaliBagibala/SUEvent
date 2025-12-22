@@ -19,17 +19,16 @@ class DayEventsScreen extends StatefulWidget {
 class _DayEventsScreenState extends State<DayEventsScreen> {
   String _selectedCategory = 'All';
 
-  String _fallbackFor(String category) {
-    final key = category.toLowerCase().replaceAll(" ", "");
-    if (key.contains("food")) return "assets/images/generic_food.png";
-    if (key.contains("sport")) return "assets/images/generic_sports.png";
-    if (key.contains("music")) return "assets/images/generic_music.png";
-    if (key.contains("movie") || key.contains("film")) return "assets/images/generic_movie.png";
-    if (key.contains("club")) return "assets/images/generic_clubs.png";
-    if (key.contains("hang")) return "assets/images/generic_hangout.png";
-    if (key.contains("game") || key.contains("dice")) return "assets/images/generic_dice.png";
-    return "assets/images/generic_other.png";
-  }
+  static const Map<String, String> _catPics = {
+    "Food": "assets/images/generic_food.png",
+    "Movies": "assets/images/generic_movie.png",
+    "Clubs": "assets/images/generic_clubs.png",
+    "Games": "assets/images/generic_dice.png",
+    "Hanging Out": "assets/images/generic_hangout.png",
+    "Sports": "assets/images/generic_sports.png",
+    "Music": "assets/images/generic_music.png",
+    "Other": "assets/images/generic_other.png",
+  };
 
   int _timeVal(String val) {
     final parts = val.split(':');
@@ -46,9 +45,12 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
         final data = val.split(",").last;
         return MemoryImage(base64Decode(data));
       }
+      if (val.startsWith("assets/")) {
+        return AssetImage(val);
+      }
       return NetworkImage(val);
     }
-    return AssetImage(_fallbackFor(event.category));
+    return AssetImage(_catPics[event.category] ?? "assets/images/generic_other.png");
   }
 
   @override
