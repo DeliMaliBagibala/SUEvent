@@ -844,6 +844,18 @@ class EventCard extends StatelessWidget {
 
   const EventCard({super.key, required this.event, this.onDelete});
 
+  ImageProvider _cardPic() {
+    if (event.imageUrls.isNotEmpty) {
+      final val = event.imageUrls.first;
+      if (val.startsWith("data:image")) {
+        final data = val.split(",").last;
+        return MemoryImage(base64Decode(data));
+      }
+      return NetworkImage(val);
+    }
+    return const NetworkImage("https://i.scdn.co/image/ab67616d0000b273c22cf856c0ad35b5767edfb6");
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
@@ -864,6 +876,7 @@ class EventCard extends StatelessWidget {
             CircleAvatar(
               radius: 28,
               backgroundColor: categoryColor,
+              backgroundImage: _cardPic(),
             ),
             const SizedBox(width: 16),
             Expanded(
