@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'theme_constants.dart';
 import 'home_page.dart'; // Imports EventCard
@@ -8,13 +10,18 @@ import 'models/event_model.dart';
 import 'starting_page.dart'; // Import for LoginPage
 
 // Result object used when coming back from the edit page.
+const String defaultPic =
+    "https://i.scdn.co/image/ab67616d0000b273c22cf856c0ad35b5767edfb6";
+
 class ProfileEditResult {
   final String name;
   final String biography;
+  final String photoUrl;
 
   ProfileEditResult({
     required this.name,
     required this.biography,
+    required this.photoUrl,
   });
 }
 
@@ -35,13 +42,22 @@ class _ProfilePageState extends State<ProfilePage> {
   
   bool _showCreated = true; // 'Created' events vs 'Saved/Attended'
 
-  Future<void> _openEditPage(BuildContext context, String currentName, String currentBio) async {
+  ImageProvider _picSrc(String val) {
+    if (val.startsWith("data:image")) {
+      final data = val.split(",").last;
+      return MemoryImage(base64Decode(data));
+    }
+    return NetworkImage(val);
+  }
+
+  Future<void> _openEditPage(BuildContext context, String currentName, String currentBio, String currentPhoto) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => EditProfilePage(
           initialName: currentName,
           initialBio: currentBio,
+          initialPhoto: currentPhoto,
         ),
       ),
     );
@@ -52,6 +68,7 @@ class _ProfilePageState extends State<ProfilePage> {
         await authProvider.updateProfile(
           username: result.name,
           bio: result.biography,
+          profilePicture: result.photoUrl,
         );
       } catch (e) {
         if (mounted) {
@@ -102,6 +119,8 @@ class _ProfilePageState extends State<ProfilePage> {
         final userData = authProvider.userData;
         final username = userData?['username'] ?? "User";
         final bio = userData?['bio'] ?? "";
+        final photoUrl = userData?['profile_picture'] ?? "";
+        final showPic = photoUrl.isNotEmpty ? photoUrl : defaultPic;
         final currentUserId = authProvider.user?.uid;
 
         final createdEvents = eventProvider.events.where((e) => e.createdBy == currentUserId).toList();
@@ -139,10 +158,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   Center(
                     child: Column(
                       children: [
-                        const CircleAvatar(
+                        CircleAvatar(
                           radius: 45,
                           backgroundColor: AppColors.accentLight,
-                          child: Icon(Icons.person_outline, size: AppDimens.iconLarge, color: AppColors.iconBlack),
+                          backgroundImage: _picSrc(showPic),
                         ),
                         const SizedBox(height: 8),
                         Text(username, style: AppTextStyles.headerLarge),
@@ -150,7 +169,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         SizedBox(
                           height: 36,
                           child: ElevatedButton(
-                            onPressed: () => _openEditPage(context, username, bio),
+                            onPressed: () => _openEditPage(context, username, bio, showPic),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.cardBackground,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimens.buttonRadius)),
@@ -270,8 +289,9 @@ class _ProfileTabButton extends StatelessWidget {
 class EditProfilePage extends StatefulWidget {
   final String initialName;
   final String initialBio;
+  final String initialPhoto;
 
-  const EditProfilePage({super.key, required this.initialName, required this.initialBio});
+  const EditProfilePage({super.key, required this.initialName, required this.initialBio, required this.initialPhoto});
 
   @override
   State<EditProfilePage> createState() => _EditProfilePageState();
@@ -280,12 +300,14 @@ class EditProfilePage extends StatefulWidget {
 class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController _nameCtrl;
   late TextEditingController _bioCtrl;
+  String _picData = "";
 
   @override
   void initState() {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.initialName);
     _bioCtrl = TextEditingController(text: widget.initialBio);
+    _picData = widget.initialPhoto;
   }
 
   @override
@@ -295,11 +317,34 @@ class _EditProfilePageState extends State<EditProfilePage> {
     super.dispose();
   }
 
+  ImageProvider _imgSrc(String val) {
+    if (val.startsWith("data:image")) {
+      final data = val.split(",").last;
+      return MemoryImage(base64Decode(data));
+    }
+    return NetworkImage(val);
+  }
+
   void _saveAndClose() {
+    final pic = _picData.isEmpty ? defaultPic : _picData;
     Navigator.pop(
       context,
-      ProfileEditResult(name: _nameCtrl.text.trim(), biography: _bioCtrl.text.trim()),
+      ProfileEditResult(
+        name: _nameCtrl.text.trim(),
+        biography: _bioCtrl.text.trim(),
+        photoUrl: pic,
+      ),
     );
+  }
+
+  Future<void> _editPic() async {
+    final picker = ImagePicker();
+    final img = await picker.pickImage(source: ImageSource.gallery, imageQuality: 75);
+    if (img == null) return;
+    final bytes = await img.readAsBytes();
+    setState(() {
+      _picData = "data:image/jpeg;base64,${base64Encode(bytes)}";
+    });
   }
 
   @override
@@ -324,18 +369,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   height: 110,
                   child: Stack(
                     children: [
-                      const Align(
+                      Align(
                         alignment: Alignment.center,
                         child: CircleAvatar(
                           radius: 50,
                           backgroundColor: AppColors.accentLight,
-                          child: Icon(Icons.person_outline, size: AppDimens.iconLarge, color: AppColors.iconBlack),
+                          backgroundImage: _imgSrc(_picData.isEmpty ? defaultPic : _picData),
                         ),
                       ),
                       Align(
                         alignment: Alignment.bottomRight,
                         child: GestureDetector(
-                          onTap: () => print("Photo Change Button Pressed"),
+                          onTap: _editPic,
                           child: Container(
                             decoration: const BoxDecoration(color: AppColors.cardBackground, shape: BoxShape.circle),
                             padding: const EdgeInsets.all(4),

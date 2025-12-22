@@ -10,6 +10,7 @@ class Event {
   final String description;
   final String createdBy;
   final DateTime? createdAt;
+  final List<String> imageUrls;
 
   Event({
     required this.id,
@@ -21,6 +22,7 @@ class Event {
     required this.description,
     required this.createdBy,
     this.createdAt,
+    this.imageUrls = const [],
   });
 
   factory Event.fromFirestore(DocumentSnapshot doc) {
@@ -35,6 +37,10 @@ class Event {
       description: data['description'] ?? '',
       createdBy: data['createdBy'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      imageUrls: (data['imageUrls'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
     );
   }
 
@@ -48,6 +54,7 @@ class Event {
       'description': description,
       'createdBy': createdBy,
       'createdAt': createdAt ?? FieldValue.serverTimestamp(),
+      'imageUrls': imageUrls,
     };
   }
 }
