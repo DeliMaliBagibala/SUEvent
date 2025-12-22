@@ -103,6 +103,25 @@ class AppAuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<String?> changePassword(String newPassword) async {
+    if (_user == null) return "Error: You are not logged in.";
+
+    try {
+      await _user!.updatePassword(newPassword);
+      return null; // Success
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        return 'Please log in again to change your password.';
+      } else if (e.code == 'weak-password') {
+        return 'The password provided is too weak.';
+      }
+      return e.message;
+    } catch (e) {
+      return "An error occurred: $e";
+    }
+  }
+
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
