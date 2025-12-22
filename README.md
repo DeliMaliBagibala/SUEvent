@@ -9,7 +9,17 @@ At Sabancı University, opportunities to socialize outside of student club activ
 | Name    | Student ID |
 | -------- | ------- |
 | Arda Ösün | 32319 |
-| Furkan Gönen | 34260 |
+| ~Furkan Gönen~* | ~34260~* |
 | Mehmet Ali Bağıbala | 33907 |
 | Ulaş Deniz | 34034 |
 | Yağız Tüten | 33897 |
+
+*Withdrawn after Phase-2 of the project
+## Platforms
+SUEvent will be available on mobile!
+
+## Database
+For the database of SUEvent, [Firebase](https://firebase.google.com/) was used.
+
+## Before Trying to Run the Project
+Before you try the project make sure you use ```flutter pub get```
