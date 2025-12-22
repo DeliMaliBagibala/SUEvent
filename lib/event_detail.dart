@@ -351,6 +351,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   }
 
   Widget eventDetails() {
+    final authProvider = Provider.of<AppAuthProvider>(context);
+    final isBookmarked = authProvider.savedEventIds.contains(widget.event.id);
     final pics = widget.event.imageUrls;
     final hasPics = pics.isNotEmpty;
     return Column(
@@ -570,9 +572,17 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _buildActionButton(
-                        icon: Icons.add,
-                        isActive: _isAttending,
+                        icon: Icons.bookmark_border,
+                        activeIcon: Icons.bookmark,
+                        isActive: isBookmarked,
                         onTap: () {
+                          if (!authProvider.isLoggedIn) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Login to save events")),
+                            );
+                            return;
+                          }
+                          authProvider.toggleSavedEvent(widget.event.id);
                           setState(() {
                             _isAttending = !_isAttending;
                           });
