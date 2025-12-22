@@ -85,16 +85,9 @@ class StartingPage extends StatelessWidget {
               Container(
                 width: 150,
                 height: 150,
-                color: Colors.white,
-                child: Center(
-                  child: Text(
-                    "LOGO",
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
+                child: Image.asset(
+                  "assets/images/SUEventLogo.png",
+                  fit: BoxFit.contain,
                 ),
               ),
               SizedBox(height: 100),

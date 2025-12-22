@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'profile_page.dart';
 import 'calendar_screen.dart';
@@ -46,14 +47,6 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
 
   final TextEditingController _commentController = TextEditingController();
 
-
-
-  // Dummy images for now
-  final List<String> _eventImages = [
-    'assets/images/event_image1.jpg',
-    'assets/images/event_image2.jpg',
-    'assets/images/event_image3.jpg',
-  ];
 
   @override
   void dispose() {
@@ -292,7 +285,35 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     );
   }
 
+  Widget _imgView(String url) {
+    if (url.startsWith("data:image")) {
+      final data = url.split(",").last;
+      return Image.memory(
+        base64Decode(data),
+        fit: BoxFit.cover,
+      );
+    }
+    return Image.network(
+      url,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: Colors.grey[400],
+          child: const Center(
+            child: Icon(
+              Icons.broken_image,
+              size: 60,
+              color: Colors.black38,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget eventDetails() {
+    final pics = widget.event.imageUrls;
+    final hasPics = pics.isNotEmpty;
     return Column(
       children: [
         Container(
@@ -370,7 +391,9 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Hello everyone, this will be our ${widget.event.title.toLowerCase()} event...",
+                                    widget.event.description.isEmpty
+                                        ? "No description yet."
+                                        : widget.event.description,
                                     style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.black87,
@@ -402,7 +425,9 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Hello everyone, this will be our ${widget.event.title.toLowerCase()} event featuring a selection of acclaimed independent films. We'll be watching Pedro's films, along with popcorn and drinks. Join us for an evening of great cinema and discussion. The event starts at ${widget.event.time} at ${widget.event.location}. Feel free to bring your friends!",
+                                    widget.event.description.isEmpty
+                                        ? "No description yet."
+                                        : widget.event.description,
                                     style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.black87,
@@ -432,84 +457,70 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                         ),
                       ),
 
-                      // Swipeable image gallery
-                      // Swipeable image gallery - DEBUG VERSION
                       SizedBox(
                         height: 200,
-                        child: Container(
-                          color: AppColors.textBlack.withOpacity(0.3), // Debug border
-                          child: Stack(
-                            children: [
-                              // PageView with expanded touch area
-                              Positioned.fill(
-                                child: Container(
-                                  color: Colors.blue.withOpacity(0.3), // Debug border
-                                  child: PageView.builder(
-                                    itemCount: _eventImages.length,
-                                    physics: const PageScrollPhysics(),
-                                    onPageChanged: (index) {
-                                      setState(() {
-                                        _currentImageIndex = index;
-                                      });
-                                    },
-                                    itemBuilder: (context, index) {
-                                      return Container(
-                                        margin: const EdgeInsets.symmetric(horizontal: 12),
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: Colors.green, width: 2), // Debug border
-                                        ),
-                                        child: Image.asset(
-                                          _eventImages.length > index ? _eventImages[index] : _eventImages[0],
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return Container(
-                                              color: Colors.grey[400],
-                                              child: const Center(
-                                                child: Icon(
-                                                  Icons.broken_image,
-                                                  size: 60,
-                                                  color: Colors.black38,
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: PageView.builder(
+                                itemCount: hasPics ? pics.length : 1,
+                                physics: const PageScrollPhysics(),
+                                onPageChanged: (index) {
+                                  setState(() {
+                                    _currentImageIndex = index;
+                                  });
+                                },
+                                itemBuilder: (context, index) {
+                                  if (!hasPics) {
+                                    return Container(
+                                      margin: const EdgeInsets.symmetric(horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
+                                        color: Colors.grey[300],
+                                      ),
+                                      child: const Center(
+                                        child: Icon(Icons.broken_image, size: 60, color: Colors.black38),
+                                      ),
+                                    );
+                                  }
+                                  return Container(
+                                    margin: const EdgeInsets.symmetric(horizontal: 12),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: _imgView(pics[index]),
+                                    ),
+                                  );
+                                },
                               ),
-
-                              // Page indicator
+                            ),
+                            if (hasPics && pics.length > 1)
                               Positioned(
                                 bottom: 10,
                                 left: 0,
                                 right: 0,
                                 child: IgnorePointer(
-                                  child: Container(
-                                    color: Colors.yellow.withOpacity(0.3), // Debug border
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: List.generate(_eventImages.length, (index) {
-                                        return Container(
-                                          width: 8,
-                                          height: 8,
-                                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: _currentImageIndex == index
-                                                ? Colors.white
-                                                : Colors.white.withOpacity(0.5),
-                                          ),
-                                        );
-                                      }),
-                                    ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: List.generate(pics.length, (index) {
+                                      return Container(
+                                        width: 8,
+                                        height: 8,
+                                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: _currentImageIndex == index
+                                              ? Colors.white
+                                              : Colors.white.withOpacity(0.5),
+                                        ),
+                                      );
+                                    }),
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                          ],
                         ),
                       )
                     ],
