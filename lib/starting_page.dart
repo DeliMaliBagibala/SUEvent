@@ -224,7 +224,7 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(height: 20),
                 Text(
                   "WELCOME BACK!\nGLAD TO SEE YOU, AGAIN!",
-                  textAlign: TextAlign.left,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -235,12 +235,7 @@ class _LoginPageState extends State<LoginPage> {
                 _buildTextField("Enter Email", _emailController),
                 SizedBox(height: 20),
                 _buildTextField("Enter password", _passwordController, isPassword: true),
-                SizedBox(height: 10),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Text("Forgot Password?", style: TextStyle(color: Colors.teal)),
-                ),
-                SizedBox(height: 40),
+                SizedBox(height: 50),
                 SizedBox(
                   height: 50,
                   child: ElevatedButton(
@@ -375,7 +370,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   SizedBox(height: 20),
                   Text(
-                    "WELCOME TO SUEVENT!\nREGISTER NOW AND JOIN THE FUN!",
+                    "WELCOME TO SUEVENT!\nREGISTER NOW \nAND JOIN THE FUN!",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 22,
