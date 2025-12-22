@@ -120,14 +120,6 @@ class CalendarGrid extends StatelessWidget {
     return days;
   }
 
-  String _getMonthName(int month) {
-    const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    return monthNames[month - 1];
-  }
-
   Map<int, int> _getEventsForMonth(List<Event> events, DateTime date) {
     final Map<int, int> eventsPerDay = {};
     final month = date.month;

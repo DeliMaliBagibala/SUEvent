@@ -491,6 +491,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     });
   }
 
+  static const int _titleMax = 14;
+
   Future<void> _editTitle() async {
     TextEditingController controller = TextEditingController(text: _eventTitle);
     return showDialog(
@@ -503,6 +505,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           content: TextField(
             controller: controller,
             style: const TextStyle(color: AppColors.textBlack),
+            maxLength: _titleMax,
             decoration: const InputDecoration(
               hintText: "Enter event name",
               hintStyle: AppTextStyles.hintText,
@@ -517,8 +520,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             TextButton(
               child: const Text("Save", style: AppTextStyles.bodyBold),
               onPressed: () {
+                final text = controller.text.trim();
+                if (text.isEmpty) {
+                  Navigator.pop(context);
+                  return;
+                }
                 setState(() {
-                  _eventTitle = controller.text;
+                  _eventTitle = text.length > _titleMax ? text.substring(0, _titleMax) : text;
                 });
                 Navigator.pop(context);
               },
@@ -531,6 +539,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   Future<void> _editField(String label, TextEditingController controller) async {
     TextEditingController tempController = TextEditingController(text: controller.text);
+    final limit = label == "Location" ? 10 : null;
     await showDialog(
       context: context,
       builder: (context) {
@@ -540,6 +549,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           content: TextField(
             controller: tempController,
             style: const TextStyle(color: AppColors.textBlack),
+            maxLength: limit,
             decoration: InputDecoration(
               hintText: "Enter $label",
               hintStyle: AppTextStyles.hintText,
@@ -554,8 +564,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             TextButton(
               child: const Text("Save", style: AppTextStyles.bodyBold),
               onPressed: () {
+                var text = tempController.text.trim();
+                if (limit != null && text.length > limit) {
+                  text = text.substring(0, limit);
+                }
                 setState(() {
-                  controller.text = tempController.text;
+                  controller.text = text;
                 });
                 Navigator.pop(context);
               },
