@@ -583,27 +583,12 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                             return;
                           }
                           authProvider.toggleSavedEvent(widget.event.id);
-                          setState(() {
-                            _isAttending = !_isAttending;
-                          });
-                          print("Attend button pressed: $_isAttending"); //ph
                         },
                       ),
                       _buildActionButton(
                         icon: Icons.chat_bubble_outline,
                         isActive: false,
                         onTap: _handleCommentTap,
-                      ),
-                      _buildActionButton(
-                        icon: Icons.bookmark_border,
-                        isActive: _isBookmarked,
-                        activeIcon: Icons.bookmark,
-                        onTap: () {
-                          setState(() {
-                            _isBookmarked = !_isBookmarked;
-                          });
-                          print("Bookmark button pressed: $_isBookmarked"); //ph
-                        },
                       ),
                       _buildActionButton(
                         icon: Icons.send,
@@ -613,6 +598,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     ],
                   ),
                 ),
+
 
                 const SizedBox(height: 24),
 
