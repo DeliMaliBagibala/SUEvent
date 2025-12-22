@@ -67,6 +67,7 @@ class AppAuthProvider extends ChangeNotifier {
         'username': username,
         'email': email,
         'bio': '',
+        'profile_picture': 'https://i.scdn.co/image/ab67616d0000b273c22cf856c0ad35b5767edfb6',
         'createdAt': FieldValue.serverTimestamp(),
       });
       
@@ -84,12 +85,13 @@ class AppAuthProvider extends ChangeNotifier {
     await _auth.signOut();
   }
 
-  Future<void> updateProfile({String? username, String? bio}) async {
+  Future<void> updateProfile({String? username, String? bio, String? profilePicture}) async {
     if (_user == null) return;
     try {
       Map<String, dynamic> updates = {};
       if (username != null) updates['username'] = username;
       if (bio != null) updates['bio'] = bio;
+      if (profilePicture != null) updates['profile_picture'] = profilePicture;
 
       if (updates.isNotEmpty) {
         await _firestore.collection('users').doc(_user!.uid).update(updates);
