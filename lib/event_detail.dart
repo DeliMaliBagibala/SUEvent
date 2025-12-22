@@ -19,7 +19,7 @@ class EventDetailScreen extends StatefulWidget {
   const EventDetailScreen({
     super.key,
     required this.event,
-    this.isLoggedIn = false, // Default to false in case guest mode
+    this.isLoggedIn = false,
     required this.onBackTap,
   });
 
@@ -70,7 +70,6 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
 
     if (!authProvider.isLoggedIn) {
-      // need to be logged in to comment
       Navigator.pushNamed(context, '/login').then((_) {
         setState(() {});
       });
@@ -376,18 +375,16 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(width: 48), // Balance the back button
+              const SizedBox(width: 48),
             ],
           ),
         ),
 
-        // Scrollable content
         Expanded(
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Event info card with swipeable images
                 Container(
                   margin: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -397,13 +394,11 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Top info section
                       Padding(
                         padding: const EdgeInsets.all(8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Date and time
                             Text(
                               widget.event.time,
                               style: const TextStyle(
@@ -414,7 +409,6 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                             ),
                             const SizedBox(height: 4),
 
-                            // Location
                             Text(
                               widget.event.location,
                               style: const TextStyle(
@@ -425,7 +419,6 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Description preview or full description
                             if (!_showDescription)
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -583,7 +576,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                           setState(() {
                             _isAttending = !_isAttending;
                           });
-                          print("Attend button pressed: $_isAttending");
+                          print("Attend button pressed: $_isAttending"); //ph
                         },
                       ),
                       _buildActionButton(
@@ -599,7 +592,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                           setState(() {
                             _isBookmarked = !_isBookmarked;
                           });
-                          print("Bookmark button pressed: $_isBookmarked");
+                          print("Bookmark button pressed: $_isBookmarked"); //ph
                         },
                       ),
                       _buildActionButton(
@@ -613,7 +606,6 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
 
                 const SizedBox(height: 24),
 
-                // Comments section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
@@ -650,7 +642,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                           }
 
                           return ListView.builder(
-                            shrinkWrap: true, // Important for nesting in SingleChildScrollView
+                            shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: comments.length,
                             itemBuilder: (context, index) {

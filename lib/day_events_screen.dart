@@ -21,12 +21,9 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
   Widget build(BuildContext context) {
     return Consumer<EventProvider>(
       builder: (context, eventProvider, child) {
-        // Filter events for the selected day
         final dayEvents = eventProvider.events
             .where((event) => event.date == widget.dateString)
             .toList();
-
-        // Further filter by category if not 'All'
         final filteredEvents = _selectedCategory == 'All'
             ? dayEvents
             : dayEvents.where((e) => e.category == _selectedCategory).toList();
