@@ -173,7 +173,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundHeader,
+      backgroundColor: AppColors.backgroundDark,
       body: SafeArea(
         child: bodyContent,
       ),
@@ -265,7 +265,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   comment.username,
                   style: const TextStyle(
                       fontSize: 12,
-                      color: Colors.black54,
+                      color: AppColors.textBlack,
                       fontWeight: FontWeight.bold
                   ),
                 ),
@@ -274,7 +274,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   comment.text,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Colors.black,
+                    color: AppColors.textBlack,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -331,7 +331,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
             child: Icon(
               Icons.broken_image,
               size: 60,
-              color: Colors.black38,
+              color: AppColors.iconBlack,
             ),
           ),
         );
@@ -362,7 +362,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           child: Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_left, size: 40, color: Colors.black),
+                icon: const Icon(Icons.arrow_left, size: 40, color: AppColors.iconBlack),
                 onPressed: () => Navigator.pop(context),
               ),
               Expanded(
@@ -371,7 +371,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: AppColors.textBlack,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -409,7 +409,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black,
+                                color: AppColors.textBlack,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -420,7 +420,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.normal,
-                                color: Colors.black,
+                                color: AppColors.textBlack,
                               ),
                             ),
                             const SizedBox(height: 12),
@@ -436,7 +436,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                         : widget.event.description,
                                     style: const TextStyle(
                                       fontSize: 14,
-                                      color: Colors.black87,
+                                      color: AppColors.textBlack,
                                     ),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
@@ -470,7 +470,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                         : widget.event.description,
                                     style: const TextStyle(
                                       fontSize: 14,
-                                      color: Colors.black87,
+                                      color: AppColors.textBlack,
                                       height: 1.5,
                                     ),
                                   ),
