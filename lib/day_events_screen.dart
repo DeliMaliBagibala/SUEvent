@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'event_detail.dart';
@@ -17,6 +18,28 @@ class DayEventsScreen extends StatefulWidget {
 
 class _DayEventsScreenState extends State<DayEventsScreen> {
   String _selectedCategory = 'All';
+  static const String _defaultPic =
+      "https://i.scdn.co/image/ab67616d0000b273c22cf856c0ad35b5767edfb6";
+
+  int _timeVal(String val) {
+    final parts = val.split(':');
+    if (parts.length != 2) return 0;
+    final h = int.tryParse(parts[0]) ?? 0;
+    final m = int.tryParse(parts[1]) ?? 0;
+    return h * 60 + m;
+  }
+
+  ImageProvider _picFor(Event event) {
+    if (event.imageUrls.isNotEmpty) {
+      final val = event.imageUrls.first;
+      if (val.startsWith("data:image")) {
+        final data = val.split(",").last;
+        return MemoryImage(base64Decode(data));
+      }
+      return NetworkImage(val);
+    }
+    return const NetworkImage(_defaultPic);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +52,7 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
         final filteredEvents = _selectedCategory == 'All'
             ? dayEvents
             : dayEvents.where((e) => e.category == _selectedCategory).toList();
+        filteredEvents.sort((a, b) => _timeVal(a.time).compareTo(_timeVal(b.time)));
 
         return Scaffold(
           backgroundColor: AppColors.backgroundDark,
@@ -137,6 +161,7 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
           CircleAvatar(
             radius: 28,
             backgroundColor: categoryColor,
+            backgroundImage: _picFor(event),
           ),
           const SizedBox(width: 16),
           Expanded(
