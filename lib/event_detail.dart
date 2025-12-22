@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'providers/event_provider.dart';
 import 'models/comment_model.dart';
 import 'providers/auth_provider.dart';
-
+import 'package:share_plus/share_plus.dart';
 
 class EventDetailScreen extends StatefulWidget {
   final Event event;
@@ -54,6 +54,17 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     super.dispose();
   }
 
+  void _shareEvent() {
+    final String eventText =
+        "📅 You are invited to this event!: ${widget.event.title}\n\n"
+        "⏰ When: ${widget.event.date} at ${widget.event.time}\n"
+        "📍 Where: ${widget.event.location}\n"
+        "📂 Category: ${widget.event.category}\n\n"
+        "${widget.event.description.isNotEmpty ? widget.event.description : ''}\n\n"
+        "Sent from SuEvent App";
+
+    Share.share(eventText, subject: "Invitation to ${widget.event.title}");
+  }
 
   void _handleCommentTap() {
     final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
@@ -562,9 +573,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       _buildActionButton(
                         icon: Icons.send,
                         isActive: false,
-                        onTap: () {
-                          print("Share button pressed");
-                        },
+                        onTap: _shareEvent,
                       ),
                     ],
                   ),
