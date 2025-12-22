@@ -14,6 +14,13 @@ class AppAuthProvider extends ChangeNotifier {
   Map<String, dynamic>? get userData => _userData;
   bool get isLoading => _isLoading;
   bool get isLoggedIn => _user != null;
+  List<String> get savedEventIds {
+    final raw = _userData?['savedEvents'];
+    if (raw is List) {
+      return raw.map((e) => e.toString()).toList();
+    }
+    return [];
+  }
 
   AppAuthProvider() {
     _auth.authStateChanges().listen((User? user) {
@@ -68,6 +75,7 @@ class AppAuthProvider extends ChangeNotifier {
         'email': email,
         'bio': '',
         'profile_picture': '',
+        'savedEvents': [],
         'createdAt': FieldValue.serverTimestamp(),
       });
       
@@ -100,6 +108,28 @@ class AppAuthProvider extends ChangeNotifier {
     } catch (e) {
       print("Error updating profile: $e");
       rethrow;
+    }
+  }
+
+  Future<void> toggleSavedEvent(String eventId) async {
+    if (_user == null) return;
+    final current = savedEventIds;
+    if (current.contains(eventId)) {
+      current.remove(eventId);
+    } else {
+      current.add(eventId);
+    }
+    try {
+      await _firestore.collection('users').doc(_user!.uid).update({
+        'savedEvents': current,
+      });
+      _userData = {
+        ...?_userData,
+        'savedEvents': current,
+      };
+      notifyListeners();
+    } catch (e) {
+      print("Error updating saved events: $e");
     }
   }
 

@@ -200,7 +200,8 @@ class _ProfilePageState extends State<ProfilePage> {
         final currentUserId = authProvider.user?.uid;
 
         final createdEvents = eventProvider.events.where((e) => e.createdBy == currentUserId).toList();
-        final attendedEvents = <Event>[];
+        final savedIds = authProvider.savedEventIds;
+        final attendedEvents = eventProvider.events.where((e) => savedIds.contains(e.id)).toList();
 
         final visibleEvents = _showCreated ? createdEvents : attendedEvents;
 
