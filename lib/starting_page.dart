@@ -67,10 +67,8 @@ class StartingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if user is already logged in
     final authProvider = Provider.of<AppAuthProvider>(context);
     if (authProvider.isLoggedIn) {
-      // Use Future.microtask to navigate after the build frame is done
       Future.microtask(() => Navigator.pushReplacementNamed(context, '/home'));
     }
 
