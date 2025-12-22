@@ -200,11 +200,9 @@ class _ProfilePageState extends State<ProfilePage> {
         final currentUserId = authProvider.user?.uid;
 
         final createdEvents = eventProvider.events.where((e) => e.createdBy == currentUserId).toList();
-        final savedEvents = eventProvider.events
-            .where((e) => authProvider.savedEventIds.contains(e.id))
-            .toList();
+        final attendedEvents = <Event>[];
 
-        final visibleEvents = _showCreated ? createdEvents : savedEvents;
+        final visibleEvents = _showCreated ? createdEvents : attendedEvents;
 
         return Scaffold(
           backgroundColor: AppColors.backgroundHeader,

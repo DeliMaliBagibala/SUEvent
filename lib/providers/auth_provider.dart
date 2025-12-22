@@ -9,12 +9,11 @@ class AppAuthProvider extends ChangeNotifier {
   User? _user;
   Map<String, dynamic>? _userData;
   bool _isLoading = false;
-  List<String> _savedEventIds = [];
+
   User? get user => _user;
   Map<String, dynamic>? get userData => _userData;
   bool get isLoading => _isLoading;
   bool get isLoggedIn => _user != null;
-  List<String> get savedEventIds => _savedEventIds;
 
   AppAuthProvider() {
     _auth.authStateChanges().listen((User? user) {
@@ -23,7 +22,6 @@ class AppAuthProvider extends ChangeNotifier {
         _fetchUserData();
       } else {
         _userData = null;
-        _savedEventIds = [];
       }
       notifyListeners();
     });
@@ -35,7 +33,6 @@ class AppAuthProvider extends ChangeNotifier {
       DocumentSnapshot doc = await _firestore.collection('users').doc(_user!.uid).get();
       if (doc.exists) {
         _userData = doc.data() as Map<String, dynamic>;
-        _savedEventIds = List<String>.from(_userData?['savedEventIds'] ?? []);
         notifyListeners();
       }
     } catch (e) {
@@ -105,37 +102,6 @@ class AppAuthProvider extends ChangeNotifier {
       rethrow;
     }
   }
-
-  Future<void> toggleSavedEvent(String eventId) async {
-    if (_user == null) return;
-
-    final isSaved = _savedEventIds.contains(eventId);
-
-    try {
-      if (isSaved) {
-        _savedEventIds.remove(eventId);
-        await _firestore.collection('users').doc(_user!.uid).update({
-          'savedEventIds': FieldValue.arrayRemove([eventId])
-        });
-      } else {
-        _savedEventIds.add(eventId);
-        await _firestore.collection('users').doc(_user!.uid).update({
-          'savedEventIds': FieldValue.arrayUnion([eventId])
-        });
-      }
-      notifyListeners();
-    } catch (e) {
-      print("Error toggling save: $e");
-      if (isSaved) {
-        _savedEventIds.add(eventId);
-      } else {
-        _savedEventIds.remove(eventId);
-      }
-      notifyListeners();
-    }
-  }
-
-
 
   Future<String?> changePassword(String newPassword) async {
     if (_user == null) return "Error: You are not logged in.";
