@@ -18,8 +18,18 @@ class DayEventsScreen extends StatefulWidget {
 
 class _DayEventsScreenState extends State<DayEventsScreen> {
   String _selectedCategory = 'All';
-  static const String _defaultPic =
-      "https://i.scdn.co/image/ab67616d0000b273c22cf856c0ad35b5767edfb6";
+
+  String _fallbackFor(String category) {
+    final key = category.toLowerCase().replaceAll(" ", "");
+    if (key.contains("food")) return "assets/images/generic_food.png";
+    if (key.contains("sport")) return "assets/images/generic_sports.png";
+    if (key.contains("music")) return "assets/images/generic_music.png";
+    if (key.contains("movie") || key.contains("film")) return "assets/images/generic_movie.png";
+    if (key.contains("club")) return "assets/images/generic_clubs.png";
+    if (key.contains("hang")) return "assets/images/generic_hangout.png";
+    if (key.contains("game") || key.contains("dice")) return "assets/images/generic_dice.png";
+    return "assets/images/generic_other.png";
+  }
 
   int _timeVal(String val) {
     final parts = val.split(':');
@@ -38,7 +48,7 @@ class _DayEventsScreenState extends State<DayEventsScreen> {
       }
       return NetworkImage(val);
     }
-    return const NetworkImage(_defaultPic);
+    return AssetImage(_fallbackFor(event.category));
   }
 
   @override

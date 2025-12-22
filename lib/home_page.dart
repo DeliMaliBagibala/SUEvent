@@ -844,6 +844,18 @@ class EventCard extends StatelessWidget {
 
   const EventCard({super.key, required this.event, this.onDelete});
 
+  String _fallbackFor(String category) {
+    final key = category.toLowerCase().replaceAll(" ", "");
+    if (key.contains("food")) return "assets/images/generic_food.png";
+    if (key.contains("sport")) return "assets/images/generic_sports.png";
+    if (key.contains("music")) return "assets/images/generic_music.png";
+    if (key.contains("movie") || key.contains("film")) return "assets/images/generic_movie.png";
+    if (key.contains("club")) return "assets/images/generic_clubs.png";
+    if (key.contains("hang")) return "assets/images/generic_hangout.png";
+    if (key.contains("game") || key.contains("dice")) return "assets/images/generic_dice.png";
+    return "assets/images/generic_other.png";
+  }
+
   ImageProvider _cardPic() {
     if (event.imageUrls.isNotEmpty) {
       final val = event.imageUrls.first;
@@ -853,7 +865,7 @@ class EventCard extends StatelessWidget {
       }
       return NetworkImage(val);
     }
-    return const NetworkImage("https://i.scdn.co/image/ab67616d0000b273c22cf856c0ad35b5767edfb6");
+    return AssetImage(_fallbackFor(event.category));
   }
 
   @override

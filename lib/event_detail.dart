@@ -295,6 +295,18 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     );
   }
 
+  String _fallbackFor(String category) {
+    final key = category.toLowerCase().replaceAll(" ", "");
+    if (key.contains("food")) return "assets/images/generic_food.png";
+    if (key.contains("sport")) return "assets/images/generic_sports.png";
+    if (key.contains("music")) return "assets/images/generic_music.png";
+    if (key.contains("movie") || key.contains("film")) return "assets/images/generic_movie.png";
+    if (key.contains("club")) return "assets/images/generic_clubs.png";
+    if (key.contains("hang")) return "assets/images/generic_hangout.png";
+    if (key.contains("game") || key.contains("dice")) return "assets/images/generic_dice.png";
+    return "assets/images/generic_other.png";
+  }
+
   Widget eventDetails() {
     final pics = widget.event.imageUrls;
     final hasPics = pics.isNotEmpty;
@@ -460,10 +472,13 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                       margin: const EdgeInsets.symmetric(horizontal: 12),
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(8),
-                                        color: Colors.grey[300],
                                       ),
-                                      child: const Center(
-                                        child: Icon(Icons.broken_image, size: 60, color: Colors.black38),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.asset(
+                                          _fallbackFor(widget.event.category),
+                                          fit: BoxFit.cover,
+                                        ),
                                       ),
                                     );
                                   }
