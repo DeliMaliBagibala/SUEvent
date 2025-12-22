@@ -109,7 +109,84 @@ class _ProfilePageState extends State<ProfilePage> {
       }
     }
   }
+  void _showChangePasswordDialog(BuildContext context) {
+    final TextEditingController passwordController = TextEditingController();
+    final TextEditingController confirmController = TextEditingController();
 
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.accentLight,
+          title: const Text("Change Password", style: TextStyle(color: AppColors.textBlack)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                style: const TextStyle(color: AppColors.textBlack),
+                decoration: const InputDecoration(
+                  hintText: "New Password",
+                  hintStyle: AppTextStyles.hintText,
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: confirmController,
+                obscureText: true,
+                style: const TextStyle(color: AppColors.textBlack),
+                decoration: const InputDecoration(
+                  hintText: "Confirm Password",
+                  hintStyle: AppTextStyles.hintText,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              child: const Text("Cancel", style: AppTextStyles.bodyBold),
+              onPressed: () => Navigator.pop(context),
+            ),
+            TextButton(
+              child: const Text("Update", style: AppTextStyles.bodyBold),
+              onPressed: () async {
+                final newPass = passwordController.text.trim();
+                final confirmPass = confirmController.text.trim();
+                if (newPass.length < 6) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Password must be at least 6 characters")),
+                  );
+                  return;
+                }
+                if (newPass != confirmPass) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Passwords do not match")),
+                  );
+                  return;
+                }
+                Navigator.pop(context);
+                final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+                final error = await authProvider.changePassword(newPass);
+
+                if (mounted) {
+                  if (error == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Password updated successfully!")),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(error)),
+                    );
+                  }
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Consumer2<AppAuthProvider, EventProvider>(
@@ -165,18 +242,44 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 8),
                         Text(username, style: AppTextStyles.headerLarge),
                         const SizedBox(height: 8),
-                        SizedBox(
-                          height: 36,
-                          child: ElevatedButton(
-                            onPressed: () => _openEditPage(context, username, bio, showPic),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.cardBackground,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimens.buttonRadius)),
-                              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 6),
-                              elevation: 0,
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              height: 36,
+                              child: ElevatedButton(
+                                onPressed: () => _openEditPage(context, username, bio, showPic),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.cardBackground,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(AppDimens.buttonRadius),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6), // Reduced padding slightly to fit both
+                                  elevation: 0,
+                                ),
+                                child: const Text("Edit Profile", style: AppTextStyles.bodyBold),
+                              ),
                             ),
-                            child: const Text("Edit Profile", style: AppTextStyles.bodyBold),
-                          ),
+
+                            const SizedBox(width: 12),
+                            // Change Password
+                            SizedBox(
+                              height: 36,
+                              child: ElevatedButton(
+                                onPressed: () => _showChangePasswordDialog(context),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.cardBackground,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(AppDimens.buttonRadius),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                  elevation: 0,
+                                ),
+                                child: const Text("Change Password", style: AppTextStyles.bodyBold),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
