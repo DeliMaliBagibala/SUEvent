@@ -111,6 +111,17 @@ class AppAuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<Map<String, dynamic>?> getUserById(String uid) async {
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (!doc.exists) return null;
+      return doc.data() as Map<String, dynamic>?;
+    } catch (e) {
+      print("Error loading user data: $e");
+      return null;
+    }
+  }
+
   Future<void> toggleSavedEvent(String eventId) async {
     if (_user == null) return;
     final current = savedEventIds;

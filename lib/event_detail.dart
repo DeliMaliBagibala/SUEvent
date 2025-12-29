@@ -250,10 +250,14 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.white,
-            backgroundImage: pic,
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _showUserPopup(comment.userId),
+            child: CircleAvatar(
+              radius: 20,
+              backgroundColor: Colors.white,
+              backgroundImage: pic,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -303,6 +307,63 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           color: AppColors.iconBlack,
         ),
       ),
+    );
+  }
+
+  Future<void> _showUserPopup(String userId) async {
+    final authProvider = Provider.of<AppAuthProvider>(context, listen: false);
+    final data = await authProvider.getUserById(userId);
+    if (!mounted) return;
+    if (data == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("User info not found.")),
+      );
+      return;
+    }
+    final username = data['username'] ?? 'User';
+    final bio = data['bio'] ?? '';
+    final email = data['email'] ?? '';
+    final photoUrl = data['profile_picture'] ?? '';
+    ImageProvider pic;
+    if (photoUrl is String && photoUrl.isNotEmpty) {
+      if (photoUrl.startsWith("data:image")) {
+        final raw = photoUrl.split(",").last;
+        pic = MemoryImage(base64Decode(raw));
+      } else if (photoUrl.startsWith("assets/")) {
+        pic = AssetImage(photoUrl);
+      } else {
+        pic = NetworkImage(photoUrl);
+      }
+    } else {
+      pic = const AssetImage("assets/images/generic_user_photo.png");
+    }
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.accentLight,
+          title: Text(username, style: const TextStyle(color: AppColors.textBlack)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(radius: 32, backgroundImage: pic),
+              const SizedBox(height: 12),
+              Text(email, style: const TextStyle(color: AppColors.textBlack)),
+              const SizedBox(height: 8),
+              Text(
+                bio.isEmpty ? "No bio." : bio,
+                style: const TextStyle(color: AppColors.textBlack),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close", style: TextStyle(color: AppColors.textBlack)),
+            ),
+          ],
+        );
+      },
     );
   }
 
