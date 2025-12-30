@@ -23,3 +23,23 @@ For the database of SUEvent, [Firebase](https://firebase.google.com/) was used.
 
 ## Before Trying to Run the Project
 Before you try the project make sure you use ```flutter pub get```
+
+## Setup & Run (Step‑by‑Step)
+1. Install Flutter (tested with Flutter 3.x).
+  Verify with: flutter --version
+2. Install Dependencies:
+   run: flutter pub get
+3. Firebase setup:
+  Create a Firebase project.
+  Enable Firebase Auth (Email/Password).
+  Enable Cloud Firestore.
+  Add your Android app in Firebase and download google-services.json and place in android/app/.
+  Download GoogleService-Info.plist and place in ios/Runner/.
+  Update firebase_options.dart with your project config.
+4. Run the App
+   run: flutter run
+5. Run tests
+   run: flutter test
+
+## Known Limitations / Bugs
+--
