@@ -746,6 +746,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 6),
+                const Text(
+                  "Max 3 images",
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                ),
                 const SizedBox(height: 20),
                 Container(
                   height: 80,
