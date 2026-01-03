@@ -42,4 +42,4 @@ Before you try the project make sure you use ```flutter pub get```
    run: flutter test
 
 ## Known Limitations / Bugs
---
+- For an event, a maximum of 3 images can be added due to our storage constraints.
