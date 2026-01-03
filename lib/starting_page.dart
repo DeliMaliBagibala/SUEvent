@@ -47,6 +47,10 @@ Widget _buildTextField(String hint, TextEditingController controller, {bool isPa
     child: TextFormField(
       controller: controller,
       obscureText: isPassword,
+      enableSuggestions: false,
+      autocorrect: false,
+      keyboardType: isPassword ? TextInputType.visiblePassword: TextInputType.text,
+      textInputAction: TextInputAction.next,
       style: TextStyle(color: Colors.black),
       autovalidateMode: AutovalidateMode.onUserInteraction,
       validator: (value) {
@@ -165,10 +169,12 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+
     super.dispose();
   }
 
@@ -263,7 +269,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-                Spacer(),
+                SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -304,7 +310,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -361,6 +366,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(30.0),
