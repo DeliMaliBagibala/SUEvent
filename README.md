@@ -43,3 +43,4 @@ Before you try the project make sure you use ```flutter pub get```
 
 ## Known Limitations / Bugs
 - For an event, a maximum of 3 images can be added due to our storage constraints.
+- On some devices, the navigation bar of the app may partially/fully fall behind the navigation buttons of the device itself.
