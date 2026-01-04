@@ -39,7 +39,34 @@ Before you try the project make sure you use ```flutter pub get```
 4. Run the App
    run: flutter run
 5. Run tests
-   run: flutter test
+   There are 3 files for testing, all are run with flutter test.
+
+   Unit Tests:
+   
+   login_test.dart has 4 tests.
+
+   This is not a database test but input validation test
+   
+   Tests entering a valid email (gets null)
+   Tests entering an invlaid email (gets Invalid Email (please use only *****@sabanciuniv.edu mails)
+   Tests entering a 3 character password (gets Password too short (at least 6 characters))
+   Tests entering a valid password (gets null)
+
+   firebase_test.dart has 2 tests.
+
+   Simulates a dummy event with fake_cloud_firestore and parses it.
+   Simulates a dummy event with missing parameters to check for robustness around missing and/or null values.
+
+   Widget Tests:
+   event_detail_test.dart has 4 tests.
+
+   Creates a mock event, checks if the event is displayed on the screen. (Checks 4 fields: name,location,time,description)
+
+   Checks the comment section for the empty comment message.
+
+   Checks if the floating action buttons are there.
+   
+   Creates a new mock event and checks if the back button in the header can be pressed.
 
 ## Known Limitations / Bugs
 --
