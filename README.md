@@ -48,8 +48,11 @@ Before you try the project make sure you use ```flutter pub get```
    This is not a database test but input validation test
    
    Tests entering a valid email (gets null)
+   
    Tests entering an invlaid email (gets Invalid Email (please use only *****@sabanciuniv.edu mails)
+   
    Tests entering a 3 character password (gets Password too short (at least 6 characters))
+   
    Tests entering a valid password (gets null)
 
    firebase_test.dart has 2 tests.
