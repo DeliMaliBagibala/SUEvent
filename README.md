@@ -63,6 +63,7 @@ Before you try the project make sure you use ```flutter pub get```
      firebase_test.dart has 2 tests.
 
      Simulates a dummy event with fake_cloud_firestore and parses it.
+  
      Simulates a dummy event with missing parameters to check for robustness around missing and/or null values.
 
 - Widget Tests:
