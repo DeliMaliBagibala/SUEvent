@@ -32,7 +32,7 @@ For the database of SUEvent, [Firebase](https://firebase.google.com/) was used.
 Before you try the project make sure you use ```flutter pub get```
 
 ## Setup & Run (Step‑by‑Step)
-1. Install Flutter (tested with Flutter 3.x).
+1. [Install Flutter](https://docs.flutter.dev/install) (tested with Flutter 3.x).
   Verify with: flutter --version
 2. Install Dependencies:
    run: flutter pub get
